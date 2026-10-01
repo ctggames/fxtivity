@@ -15,3 +15,7 @@ buildNumber.properties
 .project
 # JDT-specific (Eclipse Java Development Tools)
 .classpath
+# Per-project Eclipse preferences, including the formatter settings m2e writes from the
+# Spotless config. The formatter profile itself is versioned in config/, so this directory
+# is a derived artifact.
+.settings/

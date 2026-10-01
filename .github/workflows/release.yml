@@ -1,0 +1,113 @@
+# Publishes a tagged release to the Maven Central Portal.
+#
+# Tag a commit whose pom version has had -SNAPSHOT removed, and whose tag equals that version:
+#
+#     mvn versions:set -DnewVersion=1.0.0 && git commit -am "Release 1.0.0"
+#     git tag 1.0.0 && git push origin master 1.0.0
+#
+# The deployment is staged on the Portal rather than published automatically - see autoPublish in the pom -
+# so the last step of a release is always a deliberate one taken by hand.
+#
+# Run this by hand in "rehearse" mode before a tag depends on it. A re-run uses the workflow as it existed
+# at the tagged commit, so a problem found at tag time cannot be fixed by landing a correction on master:
+# it needs a fresh tag. Rehearsing is much cheaper than discovering that.
+
+name: Release to Maven Central
+
+# Needed by the final step, which creates the GitHub release. This repository's default workflow
+# token is read-only, so without this the publish succeeds and then the release call 403s - which
+# is how yaml-flock 1.0.0 shipped to the Portal with no GitHub release beside it (ctgnz/yaml-flock#15).
+# Declared here rather than widening the repository-wide setting: it grants the one workflow the one
+# permission, and it travels with the file, so a fork behaves the same without anyone knowing about a
+# setting in a UI.
+permissions:
+  contents: write
+
+on:
+  push:
+    tags:
+      - '*'
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: >-
+          "rehearse" builds and signs exactly as a real release would, then stops - nothing reaches the
+          Portal and no GitHub release is created. It proves the build, the javadoc, and the GPG_PRIVATE_KEY
+          and GPG_PASSPHRASE secrets. It cannot prove CENTRAL_USERNAME and CENTRAL_PASSWORD, which are only
+          read when something is actually uploaded. "publish" does the real thing against the current pom
+          version.
+        type: choice
+        options: [rehearse, publish]
+        default: rehearse
+
+jobs:
+  release:
+    # Pinned rather than floating, matching jmsfx: a release should build on a known image rather than on
+    # whatever the label points at that week, and maven.yml already runs on the floating label so a new
+    # image's problems surface in CI first. Bump this deliberately.
+    runs-on: ubuntu-24.04
+    steps:
+    - uses: actions/checkout@v7
+    - name: Set up JDK 25
+      uses: actions/setup-java@v5
+      with:
+        java-version: '25'
+        distribution: 'temurin'
+        cache: 'maven'
+        # Writes a settings.xml carrying a 'central' server whose credentials come from the environment,
+        # and imports the signing key. The publishing plugin resolves that server before it does anything
+        # else, so without this the build fails on a null server rather than on a rejected upload.
+        server-id: central
+        server-username: MAVEN_USERNAME
+        server-password: MAVEN_PASSWORD
+        gpg-private-key: ${{ secrets.GPG_PRIVATE_KEY }}
+        gpg-passphrase: MAVEN_GPG_PASSPHRASE
+
+    # foxglove 0.9.5 was tagged with -SNAPSHOT still in the pom, so it built snapshot artifacts, failed to
+    # deploy, and still produced a GitHub release for a version that never reached Central. Fail before
+    # building anything instead. Skipped on a manual run, where the pom is expected to be a snapshot.
+    - name: Verify the tag names a release version
+      if: github.event_name == 'push'
+      run: |
+        VERSION=$(mvn -q -B help:evaluate -Dexpression=project.version -DforceStdout 2>/dev/null | tail -n1)
+        echo "tag:         $GITHUB_REF_NAME"
+        echo "pom version: $VERSION"
+        case "$VERSION" in
+          *-SNAPSHOT)
+            echo "::error::pom version $VERSION is a snapshot - remove -SNAPSHOT before tagging a release"
+            exit 1
+            ;;
+        esac
+        if [ "$VERSION" != "$GITHUB_REF_NAME" ]; then
+          echo "::error::tag $GITHUB_REF_NAME does not match pom version $VERSION"
+          exit 1
+        fi
+
+    # Everything a release does except the two steps that cannot be undone.
+    - name: Rehearse the release build
+      if: github.event_name == 'workflow_dispatch' && inputs.mode == 'rehearse'
+      run: mvn -B --no-transfer-progress -Prelease verify
+      env:
+        MAVEN_GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+
+    # Tests are not skipped here, unlike foxglove, which skips them because JavaFX blocks forever on a
+    # display-less runner. This suite needs no display and runs in under two seconds, so there is no reason
+    # to ship artifacts that were not tested on the exact commit being released.
+    - name: Publish to the Maven Central Portal
+      if: github.event_name == 'push' || inputs.mode == 'publish'
+      run: mvn -B --no-transfer-progress -Prelease deploy
+      env:
+        MAVEN_USERNAME: ${{ secrets.CENTRAL_USERNAME }}
+        MAVEN_PASSWORD: ${{ secrets.CENTRAL_PASSWORD }}
+        MAVEN_GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+
+    # After the publish, so a failed deploy cannot leave a release announcing a version that is not on
+    # Central. Tag pushes only: on a manual "publish" run there is no tag for a release to describe, and
+    # the action would name one after the branch instead.
+    - name: Create release
+      if: github.event_name == 'push'
+      uses: ncipollo/release-action@v1
+      with:
+        allowUpdates: true
+        artifacts: "${{ github.workspace }}/target/*.jar"
+        token: ${{ secrets.GITHUB_TOKEN }}

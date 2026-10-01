@@ -1,0 +1,43 @@
+# Builds on every push to master and every pull request against it.
+#
+# For more information see:
+# https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-java-with-maven
+
+name: Java CI with Maven
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+jobs:
+  build:
+    # The floating label on purpose, matching jmsfx: CI is where a new runner image's problems should
+    # surface, so that a release never meets one for the first time. release.yml pins its image instead.
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v7
+    - name: Set up JDK 25
+      uses: actions/setup-java@v5
+      with:
+        java-version: '25'
+        distribution: 'temurin'
+        cache: 'maven'
+
+    # No Xvfb step, unlike foxglove and jmsfx: nothing here starts a JavaFX toolkit, so a display-less
+    # runner is fine.
+    - name: Build with Maven
+      run: mvn -B clean verify
+
+    # The release profile is what attaches javadoc and sources, and its doclint=all,-missing is the only
+    # thing in the whole build that resolves {@link} references. Run it on every push so it cannot quietly
+    # stop working between releases - jmsfx found six dangling links at tag time and paid for them with two
+    # re-signed tags (ctgnz/jmsfx#148).
+    #
+    # GPG is the only thing skipped, because a pull request from a fork has no signing key. Skipping javadoc
+    # as well would leave this step checking nothing at all, which is precisely how that problem stayed
+    # hidden - the profile adds javadoc, sources and signing, and skipping two of the three makes the check
+    # a no-op that still reports success.
+    - name: Check the release profile still builds
+      run: mvn -B --no-transfer-progress -Prelease verify -Dgpg.skip=true

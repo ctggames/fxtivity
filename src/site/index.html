@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>fxtivity</title>
+<style>
+:root {
+  --bg: #fcfcfa;
+  --fg: #22211e;
+  --muted: #6b6860;
+  --rule: #e2dfd7;
+  --accent: #7a5c2e;
+  --code-bg: #f4f2ec;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #1a1917;
+    --fg: #e8e5dd;
+    --muted: #9a958a;
+    --rule: #332f29;
+    --accent: #c9a567;
+    --code-bg: #232120;
+  }
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  padding: 0 16px 4rem;
+  background: var(--bg);
+  color: var(--fg);
+  font: 16px/1.65 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+main { max-width: 46rem; margin: 0 auto; }
+header { padding: 3.5rem 0 2rem; border-bottom: 1px solid var(--rule); margin-bottom: 2.5rem; }
+h1 { margin: 0 0 .4rem; font-size: 2.6rem; letter-spacing: -.02em; }
+h1 .fx { color: var(--accent); }
+.tagline { margin: 0; font-size: 1.15rem; color: var(--muted); max-width: 34rem; }
+h2 { margin: 2.75rem 0 .75rem; font-size: 1.25rem; letter-spacing: -.01em; }
+p { margin: 0 0 1rem; }
+a { color: var(--accent); }
+pre {
+  background: var(--code-bg);
+  border: 1px solid var(--rule);
+  border-radius: 4px;
+  padding: .9rem 1rem;
+  overflow-x: auto;
+  font: 13.5px/1.6 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  margin: 0 0 1rem;
+}
+code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: .92em; }
+p code, li code { background: var(--code-bg); padding: .1em .35em; border-radius: 3px; }
+.cards { display: flex; flex-wrap: wrap; gap: 1rem; margin: 1.25rem 0 0; }
+.card {
+  flex: 1 1 18rem;
+  border: 1px solid var(--rule);
+  border-radius: 6px;
+  padding: 1.1rem 1.2rem;
+  background: var(--code-bg);
+}
+.card h3 { margin: 0 0 .4rem; font-size: 1.02rem; }
+.card p { margin: 0 0 .75rem; font-size: .93rem; color: var(--muted); }
+.card a { font-weight: 600; text-decoration: none; }
+.card a:hover { text-decoration: underline; }
+.meta { margin-top: 3.5rem; padding-top: 1.25rem; border-top: 1px solid var(--rule); font-size: .9rem; color: var(--muted); }
+.meta a { margin-right: 1.25rem; }
+</style>
+</head>
+<body>
+<main>
+
+<header>
+  <h1><span class="fx">fx</span>tivity</h1>
+  <p class="tagline">The <a href="https://martinfowler.com/eaaDev/Effectivity.html">Effectivity pattern</a> on JavaFX:
+  things in effect for a period, values that change over time, and observable collections that all follow one
+  application-wide effective date.</p>
+</header>
+
+<h2>Why</h2>
+
+<p>Most data that matters changes over time. People change jobs and names, companies are renamed, a post is held by
+one person and then another. Keeping only the current state throws away the history, and with it the ability to
+answer <em>what was true on this date?</em> &mdash; often the question that matters most.</p>
+
+<p>Fowler's pattern gives each object a period during which it is in effect, and filters by date. Its cost, as he
+says himself, is that every query wanting current information has to remember to check the period.</p>
+
+<p>On JavaFX that cost all but disappears. A user interface is always showing the world as it was on <em>some</em>
+date, so make that date one observable value and have every effective collection filter itself against it. Moving the
+date is then a single call, and every table, tree and chart bound to those collections updates on its own:</p>
+
+<pre>MultiEffectiveList&lt;Employment&gt; employments = new MultiEffectiveList&lt;&gt;();
+employments.add(new Employment(indiaInc, LocalDate.of(1999, 12, 1), LocalDate.of(2000, 5, 1)));
+employments.add(new Employment(peninsulaInc, LocalDate.of(2000, 4, 1)));
+
+table.setItems(employments.effective());
+
+Effectivity.forDate(LocalDate.of(2000, 4, 15));   // the table shows both
+Effectivity.forDate(LocalDate.of(2000, 6, 1));    // the table shows Peninsula Inc alone</pre>
+
+<p>Nothing there tells the table the date moved. It finds out because the list does. And there is exactly one
+effective date per application &mdash; two collections disagreeing about what &ldquo;now&rdquo; means would be a
+defect, not a feature.</p>
+
+<h2>Have a look</h2>
+
+<div class="cards">
+  <div class="card">
+    <h3>The specification</h3>
+    <p>Scenarios built on Fowler's own example &mdash; people, companies and the employments between them &mdash;
+    and extended with what his pattern leaves to others: a name that changes over time, an office with one holder at
+    a time, and a board whose seats each have their own history.</p>
+    <a href="scenarios.html">Read the scenarios &rarr;</a>
+  </div>
+  <div class="card">
+    <h3>The worked example</h3>
+    <p>The model the scenarios run against: a person whose employments overlap and whose name changes, and a company
+    with a succession of chief executives and a board. Small enough to read in one sitting, and every class
+    implements the pattern the way a consumer would.</p>
+    <a href="https://github.com/ctgnz/fxtivity/tree/master/src/test/java/io/github/ctgnz/fxtivity/employment">Explore the model &rarr;</a>
+  </div>
+</div>
+
+<h2>Using it</h2>
+
+<pre>&lt;dependency&gt;
+    &lt;groupId&gt;io.github.ctgnz&lt;/groupId&gt;
+    &lt;artifactId&gt;fxtivity&lt;/artifactId&gt;
+    &lt;version&gt;1.0.0&lt;/version&gt;
+&lt;/dependency&gt;</pre>
+
+<p>Implement <code>IEffectiveEntity</code> &mdash; a start, an end, and their setters &mdash; and the rest follows.
+Periods are closed-open: in effect from the first day up to but not including the last, so one period hands over to
+the next on the same date with no overlap and no gap.</p>
+
+<p>Pick the collection by how many things can be in effect at once. <code>MultiEffectiveList</code> for any number,
+like a person's employments. <code>SingleEffectiveList</code> for one at a time, like a company's chief executive.
+<code>EffectiveMap</code> for one at a time per key, like the seats on a board. And <code>EffectiveProperty</code>
+for a value that changes during its owner's lifetime, like a person's name.</p>
+
+<p class="meta">
+  <a href="https://github.com/ctgnz/fxtivity">Source</a>
+  <a href="https://central.sonatype.com/artifact/io.github.ctgnz/fxtivity">Maven Central</a>
+  <a href="https://github.com/ctgnz/fxtivity/blob/master/README.md">README</a>
+  <a href="https://github.com/ctgnz/fxtivity/blob/master/LICENSE">Apache 2.0</a>
+</p>
+
+</main>
+</body>
+</html>
