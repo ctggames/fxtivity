@@ -4,9 +4,9 @@ import java.time.LocalDate;
 import java.util.Objects;
 
 import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.ReadOnlyObjectProperty;
+import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.beans.property.SimpleObjectProperty;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.WeakChangeListener;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -31,7 +31,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public class Effectivity {
     /** The end of a period that has no end. */
     public static final LocalDate FOREVER = LocalDate.of(9999, 12, 31);
-    private static final ObjectProperty<LocalDate> EDATE = new SimpleObjectProperty<>(LocalDate.now());
+    private static final ReadOnlyObjectWrapper<LocalDate> EDATE = new ReadOnlyObjectWrapper<>(LocalDate.now());
     private static final ObjectProperty<DateRange> ERANGE = new SimpleObjectProperty<>(toEffectiveRange(LocalDate.now(), FOREVER));
 
     /**
@@ -161,15 +161,16 @@ public class Effectivity {
     }
 
     /**
-     * Registers a listener on the effective date.
+     * The application's effective date, read-only: it is moved with {@link #forDate(LocalDate)} or {@link #forDates(LocalDate, LocalDate, LocalDate)}.
      * <p>
-     * Held weakly, so the listener does not keep its owner alive; the caller must keep a strong reference for as long as it wants notifications.
+     * Listen to it, subscribe to it, or bind to it, as with any JavaFX property - how is the listener's owner's choice. The property lives as long as the application, so a
+     * listener added with {@code addListener} keeps its owner alive until it is removed; an owner that should be collected without removing it wraps it in a
+     * {@link javafx.beans.value.WeakChangeListener} and keeps the listener itself in a field, as {@link EffectiveList} does.
      *
-     * @param listener
-     *            the listener to register
+     * @return the property
      */
-    public static void listen(ChangeListener<? super LocalDate> listener) {
-        EDATE.addListener(new WeakChangeListener<>(listener));
+    public static ReadOnlyObjectProperty<LocalDate> effectiveDateProperty() {
+        return EDATE.getReadOnlyProperty();
     }
 
     /** Moves the effective date back to today. */

@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Optional;
 
 import javafx.beans.value.ChangeListener;
+import javafx.beans.value.WeakChangeListener;
 import javafx.collections.FXCollections;
 import javafx.collections.ModifiableObservableListBase;
 import javafx.collections.ObservableList;
@@ -58,7 +59,7 @@ public abstract class EffectiveList<E extends IEffectiveEntity> extends Modifiab
         sourceList.sort(DATE_ORDER);
         this.readOnlySource = FXCollections.unmodifiableObservableList(sourceList);
         this.filtered = sourceList.filtered(this::isActive);
-        Effectivity.listen(effectiveDateListener);
+        Effectivity.effectiveDateProperty().addListener(new WeakChangeListener<>(effectiveDateListener));
     }
 
     @Override
