@@ -61,12 +61,15 @@ public class SingleEffectiveList<E extends IEffectiveEntity> extends EffectiveLi
      * @param gapsAllowed
      *            whether gaps between elements are allowed
      * @throws IllegalArgumentException
-     *             if gaps are not allowed and the elements have one
+     *             if any of the elements overlap, or gaps are not allowed and the elements have one
      */
     // Calls the overridable hasGaps() before a subclass has finished initialising. Safe while no subclass overrides it, which none does.
     @SuppressWarnings("this-escape")
     public SingleEffectiveList(List<E> source, boolean gapsAllowed) {
         super(source);
+        if (hasOverlaps(sourceList)) {
+            throw new IllegalArgumentException("Overlaps are not allowed");
+        }
         if (!gapsAllowed && hasGaps()) {
             throw new IllegalArgumentException("Gaps are not allowed");
         }
@@ -75,7 +78,7 @@ public class SingleEffectiveList<E extends IEffectiveEntity> extends EffectiveLi
 
     @Override
     public boolean add(E element) {
-        if (!isGapsAllowed() && hasGap(getLast(), element)) {
+        if (!isGapsAllowed() && leavesGap(element)) {
             return false;
         }
         return super.add(element);
@@ -330,9 +333,36 @@ public class SingleEffectiveList<E extends IEffectiveEntity> extends EffectiveLi
         this.gapsAllowed.set(gapsAllowed);
     }
 
+    // Whether element, in its place by date, would start after the element before it ends, or end before the element after it starts.
+    private boolean leavesGap(E element) {
+        E previous = null;
+        E next = null;
+        for (E existing : sourceList) {
+            if (existing.getStart().isBefore(element.getStart())) {
+                previous = existing;
+            } else {
+                next = existing;
+                break;
+            }
+        }
+        return hasGap(previous, element) || hasGap(element, next);
+    }
+
+    // Compares each element only with the one after it, which finds any overlap provided the list is in date order.
+    private boolean hasOverlaps(List<E> sorted) {
+        for (int i = 1; i < sorted.size(); i++) {
+            if (sorted.get(i - 1).overlaps(sorted.get(i))) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private boolean hasGaps(Collection<? extends E> source) {
         if (source.size() > 1) {
-            Iterator<? extends E> itr = source.iterator();
+            List<E> sorted = new ArrayList<>(source);
+            sorted.sort(IEffectiveEntity.DATE_ORDER);
+            Iterator<E> itr = sorted.iterator();
             E previous = itr.next();
             while (itr.hasNext()) {
                 E next = itr.next();

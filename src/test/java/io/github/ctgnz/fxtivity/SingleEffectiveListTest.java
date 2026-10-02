@@ -1,6 +1,7 @@
 package io.github.ctgnz.fxtivity;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -158,6 +159,42 @@ class SingleEffectiveListTest {
         assertThat(candidate.getEffectiveRecord().isPresent(), is(false));
         Effectivity.forDate(LocalDate.of(1948, 1, 1));
         assertThat(candidate.getEffectiveRecord().isPresent(), is(false));
+    }
+
+    /** An element added before the first is checked against the one it precedes, not the last. */
+    @Test
+    void testGapsNotAllowedAddBeforeFirst() {
+        SingleEffectiveList<Term> candidate = new SingleEffectiveList<>(Arrays.asList(r3, r4), false);
+        assertThat("r1 ends in 1933, leaving nothing in effect until r3 starts in 1945", candidate.add(r1), is(false));
+        assertThat("r2 ends as r3 starts", candidate.add(r2), is(true));
+        assertThat(candidate, contains(r2, r3, r4));
+    }
+
+    /** An element added between two others is checked against both, and refused if it leaves a gap on either side. */
+    @Test
+    void testGapsNotAllowedAddBetween() {
+        SingleEffectiveList<Term> candidate = new SingleEffectiveList<>(Arrays.asList(r1, r4), true);
+        candidate.setGapsAllowed(false);
+        assertThat("r2 leaves nothing in effect from 1945 until r4 starts", candidate.add(r2), is(false));
+        assertThat("r3 leaves nothing in effect from 1933, when r1 ends, until it starts", candidate.add(r3), is(false));
+        Term between = Term.of("between", 1933, 1963);
+        assertThat(candidate.add(between), is(true));
+        assertThat(candidate, contains(r1, between, r4));
+    }
+
+    /** Gaps are found by date, whatever order the elements are given in. */
+    @Test
+    void testGapsNotAllowedSetAllOutOfOrder() {
+        SingleEffectiveList<Term> candidate = new SingleEffectiveList<>(false);
+        assertThat(candidate.setAll(r2, r1), is(true));
+        assertThat(candidate.setAll(r4, r1), is(false));
+        assertThat(candidate, contains(r1, r2));
+    }
+
+    @Test
+    void testOverlapsNotAllowedConstructor() {
+        assertThrows(IllegalArgumentException.class, () -> new SingleEffectiveList<>(Arrays.asList(r1, r5), true));
+        assertThrows(IllegalArgumentException.class, () -> new SingleEffectiveList<>(Arrays.asList(r2, r7), false));
     }
 
     @Test
