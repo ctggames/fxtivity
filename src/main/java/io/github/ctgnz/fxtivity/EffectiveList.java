@@ -33,6 +33,8 @@ public abstract class EffectiveList<E extends IEffectiveEntity> extends Modifiab
     protected final ObservableList<E> sourceList;
     /** The elements in effect on the application's effective date. */
     protected final FilteredList<E> filtered;
+    // The one read-only view of the source list handed out, so every caller sees the same instance and a listener on it stays attached.
+    private final ObservableList<E> readOnlySource;
     // Re-filters whenever the effective date moves. Held in a field because it is registered weakly: the list keeps it alive for exactly
     // as long as the list itself lives, so a discarded list stops listening rather than being pinned by the date forever.
     private final ChangeListener<LocalDate> effectiveDateListener = (obs, oldValue, newValue) -> updateFilter();
@@ -54,6 +56,7 @@ public abstract class EffectiveList<E extends IEffectiveEntity> extends Modifiab
     public EffectiveList(List<E> source) {
         this.sourceList = FXCollections.observableArrayList(source);
         sourceList.sort(DATE_ORDER);
+        this.readOnlySource = FXCollections.unmodifiableObservableList(sourceList);
         this.filtered = sourceList.filtered(this::isActive);
         Effectivity.listen(effectiveDateListener);
     }
@@ -169,12 +172,15 @@ public abstract class EffectiveList<E extends IEffectiveEntity> extends Modifiab
     }
 
     /**
-     * Every element, in date order.
+     * Every element, in date order, whatever the effective date - the full contents an editor shows, as opposed to the {@linkplain #effective() effective view}.
+     * <p>
+     * Read-only, and live: changes made through this collection appear in it and are announced on it, but it cannot itself be changed. Every change goes through this collection's
+     * own methods, which are where its rules - on overlaps, gaps and order - are enforced.
      *
-     * @return the elements
+     * @return a read-only view of every element
      */
     public ObservableList<E> getSourceList() {
-        return sourceList;
+        return readOnlySource;
     }
 
     /**
