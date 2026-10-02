@@ -323,14 +323,6 @@ public class SingleEffectiveList<E extends IEffectiveEntity> extends EffectiveLi
         return false;
     }
 
-    @Override
-    public boolean setAll(Collection<? extends E> collection) {
-        if (!isGapsAllowed() && hasGaps(collection)) {
-            return false;
-        }
-        return super.setAll(collection);
-    }
-
     /**
      * Sets whether gaps between elements are allowed.
      *
@@ -339,6 +331,20 @@ public class SingleEffectiveList<E extends IEffectiveEntity> extends EffectiveLi
      */
     public void setGapsAllowed(boolean gapsAllowed) {
         this.gapsAllowed.set(gapsAllowed);
+    }
+
+    @Override
+    String breach(List<E> sorted) {
+        String overlap = super.breach(sorted);
+        if (overlap != null || isGapsAllowed()) {
+            return overlap;
+        }
+        for (int i = 1; i < sorted.size(); i++) {
+            if (hasGap(sorted.get(i - 1), sorted.get(i))) {
+                return "Nothing is in effect between " + sorted.get(i - 1) + " and " + sorted.get(i);
+            }
+        }
+        return null;
     }
 
     @Override

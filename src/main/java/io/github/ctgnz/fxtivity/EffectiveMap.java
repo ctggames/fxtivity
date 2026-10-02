@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.NavigableMap;
 import java.util.SortedMap;
 import java.util.SortedSet;
@@ -194,6 +195,32 @@ public class EffectiveMap<K extends Comparable<K>, E extends IEffectiveEntity> {
             }
         });
         return Collections.unmodifiableSortedSet(keys);
+    }
+
+    /**
+     * Replaces the whole map with {@code loaded}, or fails if any key's history breaks the rules.
+     * <p>
+     * All or nothing: every key is checked before any is changed. A key not in {@code loaded} is left with no records. As {@link EffectiveList#load(Collection)}, this is what a
+     * model calls from a setter to load the map it declared, with {@link #getSourceMap()} as the getter.
+     *
+     * @param loaded
+     *            each key's records, in any order
+     * @throws IllegalArgumentException
+     *             naming the key and the first breach of the rules in its history
+     */
+    public void load(Map<K, ? extends Collection<? extends E>> loaded) {
+        loaded.forEach((key, records) -> {
+            String breach = getRecords(key).breach(EffectiveList.byDate(records));
+            if (breach != null) {
+                throw new IllegalArgumentException(key + ": " + breach);
+            }
+        });
+        histories.forEach((key, history) -> {
+            if (!loaded.containsKey(key)) {
+                history.clear();
+            }
+        });
+        loaded.forEach((key, records) -> getRecords(key).load(records));
     }
 
     /**
