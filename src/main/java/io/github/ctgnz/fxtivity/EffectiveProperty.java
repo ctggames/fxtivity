@@ -365,7 +365,7 @@ public class EffectiveProperty<T, E extends IEffectiveEntity> {
      *            the element type, which the values already are
      * @param valueType
      *            the element type
-     * @return one element per span, each carrying its span's dates
+     * @return one element per span, each carrying its span's dates; empty if the history has no changes
      */
     @SuppressWarnings("unchecked")
     public <W extends IEffectiveEntity> SingleEffectiveList<W> toList(Class<W> valueType) {
@@ -381,10 +381,13 @@ public class EffectiveProperty<T, E extends IEffectiveEntity> {
      *            the element type
      * @param wrapperFunction
      *            how to build an element from a value
-     * @return one element per span, each carrying its span's dates
+     * @return one element per span, each carrying its span's dates; empty if the history has no changes
      */
     public <W extends IEffectiveEntity> SingleEffectiveList<W> toList(Function<T, W> wrapperFunction) {
         SingleEffectiveList<W> list = new SingleEffectiveList<>(false);
+        if (entries.isEmpty()) {
+            return list;
+        }
         Iterator<Entry<T>> it = entries.iterator();
         Entry<T> from = it.next();
         while (it.hasNext()) {
@@ -408,10 +411,13 @@ public class EffectiveProperty<T, E extends IEffectiveEntity> {
     /**
      * The history as one {@link EffectiveWrapper} per span of time.
      *
-     * @return one wrapper per span
+     * @return one wrapper per span; empty if the history has no changes
      */
     public SingleEffectiveList<EffectiveWrapper<T>> toWrappedList() {
         SingleEffectiveList<EffectiveWrapper<T>> list = new SingleEffectiveList<>(false);
+        if (entries.isEmpty()) {
+            return list;
+        }
         Iterator<Entry<T>> it = entries.iterator();
         Entry<T> from = it.next();
         while (it.hasNext()) {

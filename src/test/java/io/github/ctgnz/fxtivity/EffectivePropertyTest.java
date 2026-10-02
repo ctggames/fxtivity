@@ -39,6 +39,31 @@ class EffectivePropertyTest {
         assertThat(candidate.toWrappedList(), hasSize(1));
     }
 
+    /** A history with no changes yet is ordinary - just created, or emptied - and reads as no spans at all. */
+    @Test
+    void testToWrappedListWhenEmpty() {
+        assertThat(candidate.toWrappedList(), hasSize(0));
+    }
+
+    @Test
+    void testToListWhenEmpty() {
+        assertThat(candidate.toList(value -> Term.of(value, 1970, 1971)), hasSize(0));
+    }
+
+    @Test
+    void testToListOfTypeWhenEmpty() {
+        EffectiveProperty<Term, Term> terms = new EffectiveProperty<>(owner);
+        assertThat(terms.toList(Term.class), hasSize(0));
+    }
+
+    /** Emptying a history that had changes leaves it reading as no spans, rather than as the last one it held. */
+    @Test
+    void testToWrappedListWhenEmptied() {
+        candidate.setValue(LocalDate.of(1970, 1, 1), "Junior");
+        candidate.clear();
+        assertThat(candidate.toWrappedList(), hasSize(0));
+    }
+
     /** A value can only be set within the owner's period. */
     @Test
     void testRange() {
