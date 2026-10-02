@@ -348,16 +348,6 @@ public class SingleEffectiveList<E extends IEffectiveEntity> extends EffectiveLi
         return hasGap(previous, element) || hasGap(element, next);
     }
 
-    // Compares each element only with the one after it, which finds any overlap provided the list is in date order.
-    private boolean hasOverlaps(List<E> sorted) {
-        for (int i = 1; i < sorted.size(); i++) {
-            if (sorted.get(i - 1).overlaps(sorted.get(i))) {
-                return true;
-            }
-        }
-        return false;
-    }
-
     private boolean hasGaps(Collection<? extends E> source) {
         if (source.size() > 1) {
             List<E> sorted = new ArrayList<>(source);
