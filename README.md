@@ -72,6 +72,30 @@ name:
 
 Each change on its own line comes from [yaml-flock](https://github.com/ctgnz/yaml-flock), which is an **optional** dependency: add it if you write YAML and want that shape. Without it the annotation is simply ignored, so a project writing JSON — or not serialising at all — inherits no YAML stack for it.
 
+### Collections
+
+A collection is persisted through a getter over its source list and a setter that calls `load`:
+
+```java
+private final SingleEffectiveList<Shift> shifts = new SingleEffectiveList<>(true); // gaps allowed
+
+@JsonManagedReference
+@JsonGetter("shifts")
+List<Shift> getShifts() {
+    return shifts.getSourceList();
+}
+
+@JsonManagedReference
+@JsonSetter("shifts")
+void setShifts(List<Shift> loaded) {
+    shifts.load(loaded);
+}
+```
+
+Reading then fills the collection you declared, configured as you declared it. Annotating the field alone is not enough: Jackson replaces it with a new collection built with the defaults, which loses the configuration, and the default rules quietly drop any entries they refuse.
+
+`load` enforces the collection's rules, and all or nothing. A file that breaks them, such as an overlap in a succession or a gap where none is allowed, fails to load, and Jackson's message gives the path to the entry. It does not load with entries missing. An `EffectiveMap` follows the same pattern, with `getSourceMap()` as the getter and `load(Map)` in the setter.
+
 ## The specification
 
 **[Read the scenarios at ctgnz.github.io/fxtivity](https://ctgnz.github.io/fxtivity/)**.

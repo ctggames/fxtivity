@@ -241,12 +241,49 @@ public abstract class EffectiveList<E extends IEffectiveEntity> extends Modifiab
 
     @Override
     public boolean setAll(Collection<? extends E> collection) {
-        List<E> sorted = new ArrayList<>(collection);
-        sorted.sort(DATE_ORDER);
-        if (!isOverlapsAllowed() && hasOverlaps(sorted)) {
+        List<E> sorted = byDate(collection);
+        if (breach(sorted) != null) {
             return false;
         }
         return super.setAll(sorted);
+    }
+
+    /**
+     * Replaces the contents with {@code collection}, or fails if it breaks the collection's rules.
+     * <p>
+     * All or nothing, as {@link #setAll(Collection)}, but a refusal throws rather than returning false - which is what loading a saved model needs. A model loads each of its
+     * collections by calling this from a setter, so that the collection it declared, configured as declared, is the one that is filled:
+     *
+     * <pre>
+     * private final SingleEffectiveList&lt;Shift&gt; shifts = new SingleEffectiveList&lt;&gt;(true);
+     *
+     * &#64;JsonManagedReference
+     * &#64;JsonGetter("shifts")
+     * List&lt;Shift&gt; getShifts() {
+     *     return shifts.getSourceList();
+     * }
+     *
+     * &#64;JsonManagedReference
+     * &#64;JsonSetter("shifts")
+     * void setShifts(List&lt;Shift&gt; loaded) {
+     *     shifts.load(loaded);
+     * }
+     * </pre>
+     *
+     * A file that breaks the rules then fails to load, with the path to the entry, rather than loading with entries missing.
+     *
+     * @param collection
+     *            the elements, in any order
+     * @throws IllegalArgumentException
+     *             naming the first breach of the rules, by date
+     */
+    public void load(Collection<? extends E> collection) {
+        List<E> sorted = byDate(collection);
+        String breach = breach(sorted);
+        if (breach != null) {
+            throw new IllegalArgumentException(breach);
+        }
+        super.setAll(sorted);
     }
 
     @Override
@@ -286,6 +323,24 @@ public abstract class EffectiveList<E extends IEffectiveEntity> extends Modifiab
         } finally {
             endChange();
         }
+    }
+
+    // The first breach of the collection's rules among elements in date order, described, or null if there is none.
+    String breach(List<E> sorted) {
+        if (!isOverlapsAllowed()) {
+            for (int i = 1; i < sorted.size(); i++) {
+                if (sorted.get(i - 1).overlaps(sorted.get(i))) {
+                    return sorted.get(i - 1) + " overlaps " + sorted.get(i);
+                }
+            }
+        }
+        return null;
+    }
+
+    static <E extends IEffectiveEntity> List<E> byDate(Collection<? extends E> collection) {
+        List<E> sorted = new ArrayList<>(collection);
+        sorted.sort(DATE_ORDER);
+        return sorted;
     }
 
     // Whether any two elements overlap. Compares each only with the one after it, which finds any overlap provided the list is in date order.

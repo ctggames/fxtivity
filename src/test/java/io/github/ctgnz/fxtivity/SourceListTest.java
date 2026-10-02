@@ -2,6 +2,7 @@ package io.github.ctgnz.fxtivity;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.sameInstance;
@@ -21,6 +22,8 @@ import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import com.fasterxml.jackson.annotation.JsonSetter;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
@@ -35,13 +38,13 @@ import io.github.ctgnz.yamlflock.FlockYamlFactory;
  */
 class SourceListTest {
 
-    /** A collection field written through its source list - the pattern this change has to keep loading. */
+    /** A collection field persisted as the library prescribes: written from its source list, loaded through {@link EffectiveList#load(java.util.Collection)}. */
     @JsonPropertyOrder({
         "name", "shifts"
     })
     static final class Roster {
         private String name;
-        private final @JsonManagedReference SingleEffectiveList<Shift> shifts = new SingleEffectiveList<>();
+        private final SingleEffectiveList<Shift> shifts = new SingleEffectiveList<>();
 
         Roster() {
         }
@@ -54,9 +57,16 @@ class SourceListTest {
             return name;
         }
 
+        @JsonManagedReference
         @JsonGetter("shifts")
         List<Shift> getShifts() {
             return shifts.getSourceList();
+        }
+
+        @JsonManagedReference
+        @JsonSetter("shifts")
+        void setShifts(List<Shift> loaded) {
+            shifts.load(loaded);
         }
 
         SingleEffectiveList<Shift> shifts() {
@@ -169,18 +179,19 @@ class SourceListTest {
         assertThat("the back reference is restored", read.shifts().get(0).roster(), is(sameInstance(read)));
     }
 
-    /** The second shift overlaps the first. If loading put it in through the collection, it was refused; any back door would let both in. */
+    /** The second shift overlaps the first. Loading goes through the collection's rules, and a breach fails the load - naming where - rather than leaving a shift out. */
     @Test
-    void testLoadingGoesThroughTheCollectionsRules() throws Exception {
+    void testLoadingGoesThroughTheCollectionsRules() {
         String yaml = """
                         name: Night
                         shifts:
                         - {worker: Ana, start: 1940-01-01, end: 1960-01-01}
                         - {worker: Ben, start: 1950-01-01, end: 1970-01-01}
                         """;
-        Roster read = mapper().readValue(yaml, Roster.class);
-        assertThat(read.shifts(), hasSize(1));
-        assertThat(read.shifts().get(0).getWorker(), is("Ana"));
+        JsonMappingException failure = assertThrows(JsonMappingException.class, () -> mapper().readValue(yaml, Roster.class));
+        assertThat(failure.getPathReference(), containsString("Roster[\"shifts\"]"));
+        assertThat(failure.getOriginalMessage(), containsString("Ana"));
+        assertThat(failure.getOriginalMessage(), containsString("overlaps"));
     }
 
 }
