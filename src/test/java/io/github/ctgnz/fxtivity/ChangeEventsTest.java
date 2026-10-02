@@ -151,6 +151,17 @@ class ChangeEventsTest {
         assertMirrored(list, mirror);
     }
 
+    @Test
+    void testReschedule() {
+        MultiEffectiveList<Term> list = new MultiEffectiveList<>(List.of(a, b, c));
+        Mirror<Term> mirror = new Mirror<>(list);
+        Mirror<Term> effective = new Mirror<>(list.effective());
+        list.reschedule(c, LocalDate.of(1930, 1, 1), LocalDate.of(1990, 1, 1));
+        assertThat(list, contains(c, a, b));
+        assertMirrored(list, mirror);
+        assertThat(effective.copy, contains(c, b));
+    }
+
     /** The full list, the read-only source and the effective view each tell their own listeners the same story. */
     @Test
     void testEveryViewAgrees() {

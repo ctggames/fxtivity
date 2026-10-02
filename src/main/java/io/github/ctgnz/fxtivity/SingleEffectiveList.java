@@ -264,7 +264,7 @@ public class SingleEffectiveList<E extends IEffectiveEntity> extends EffectiveLi
             next = getNext(next).orElse(null);
         }
         if (previous != null && previous.overlaps(element)) {
-            previous.end(element.getStart());
+            move(indexOf(previous), previous.getStart(), element.getStart());
         }
         if (next == null || hasGap(element, next)) {
             return add(element);
@@ -290,7 +290,7 @@ public class SingleEffectiveList<E extends IEffectiveEntity> extends EffectiveLi
             previous = getPrevious(previous).orElse(null);
         }
         if (next != null && next.overlaps(element)) {
-            next.start(element.getEnd());
+            move(indexOf(next), element.getEnd(), next.getEnd());
         }
         if (previous == null || hasGap(previous, element)) {
             return add(element);
@@ -331,6 +331,33 @@ public class SingleEffectiveList<E extends IEffectiveEntity> extends EffectiveLi
      */
     public void setGapsAllowed(boolean gapsAllowed) {
         this.gapsAllowed.set(gapsAllowed);
+    }
+
+    @Override
+    boolean opensGap(int index, LocalDate start, LocalDate end) {
+        if (isGapsAllowed()) {
+            return false;
+        }
+        E oldPrevious = index > 0 ? sourceList.get(index - 1) : null;
+        E oldNext = index < sourceList.size() - 1 ? sourceList.get(index + 1) : null;
+        E previous = null;
+        E next = null;
+        for (int i = 0; i < sourceList.size(); i++) {
+            if (i == index) {
+                continue;
+            }
+            E other = sourceList.get(i);
+            if (other.getStart().isBefore(start)) {
+                previous = other;
+            } else {
+                next = other;
+                break;
+            }
+        }
+        boolean gapAtNewPlace = previous != null && start.isAfter(previous.getEnd()) || next != null && next.getStart().isAfter(end);
+        // Unless the element stays between its old neighbours, they become neighbours of each other.
+        boolean stays = previous == oldPrevious && next == oldNext;
+        return gapAtNewPlace || !stays && hasGap(oldPrevious, oldNext);
     }
 
     // Whether element, in its place by date, would start after the element before it ends, or end before the element after it starts.
