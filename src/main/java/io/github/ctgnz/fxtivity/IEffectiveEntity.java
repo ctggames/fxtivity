@@ -71,7 +71,11 @@ public interface IEffectiveEntity {
     }
 
     /**
-     * The period.
+     * The period, as a snapshot.
+     * <p>
+     * A new {@link Effectivity} each time, holding the dates as they are now. Changing it leaves this entity as it was: an entity's dates are changed with
+     * {@link #setStart(LocalDate)} and {@link #setEnd(LocalDate)}, or - while it is in a collection - with
+     * {@link EffectiveList#reschedule(IEffectiveEntity, LocalDate, LocalDate)}.
      *
      * @return the period
      */
@@ -160,17 +164,16 @@ public interface IEffectiveEntity {
     }
 
     /**
-     * Whether this is in effect on both {@code startDate} and {@code endDate}.
+     * Whether this is in effect throughout the period from {@code startDate} up to but excluding {@code endDate}.
      *
      * @param startDate
-     *            the first date to test
+     *            the first date of the period
      * @param endDate
-     *            the second date to test
-     * @return true if in effect on both
+     *            the first date after the period
+     * @return true if in effect on every date of it
      */
     default boolean isValidFor(LocalDate startDate, LocalDate endDate) {
-        DateRange range = getEffectiveDates();
-        return range.contains(startDate) && range.contains(endDate);
+        return getEffectiveDates().encloses(DateRange.closedOpen(startDate, endDate));
     }
 
     /**

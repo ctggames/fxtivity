@@ -69,11 +69,16 @@ public abstract class EffectiveList<E extends IEffectiveEntity> extends Modifiab
         return super.add(element);
     }
 
-    /** The index is ignored: an element always takes its place by date. */
+    /**
+     * Adds {@code element} at its place by date: the index is ignored.
+     *
+     * @throws IllegalArgumentException
+     *             if the element breaks the collection's rules
+     */
     @Override
     public void add(int index, E element) {
         if (!isOverlapsAllowed() && overlaps(element)) {
-            throw new ArrayIndexOutOfBoundsException("Overlapping element is not allowed");
+            throw new IllegalArgumentException("Overlapping element is not allowed");
         }
         super.add(indexByDate(element), element);
     }
@@ -146,18 +151,22 @@ public abstract class EffectiveList<E extends IEffectiveEntity> extends Modifiab
     }
 
     /**
-     * The end of the last element.
+     * The latest end of any element.
      *
      * @return the date
+     * @throws java.util.NoSuchElementException
+     *             if the list is empty
      */
     public LocalDate getMaxDate() {
-        return sourceList.getLast().getEnd();
+        return sourceList.stream().map(IEffectiveEntity::getEnd).max(LocalDate::compareTo).orElseThrow();
     }
 
     /**
-     * The start of the first element.
+     * The start of the first element, which is the earliest start of any.
      *
      * @return the date
+     * @throws java.util.NoSuchElementException
+     *             if the list is empty
      */
     public LocalDate getMinDate() {
         return sourceList.getFirst().getStart();

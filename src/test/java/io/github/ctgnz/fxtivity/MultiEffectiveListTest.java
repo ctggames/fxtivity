@@ -17,6 +17,14 @@ import org.junit.jupiter.api.Test;
  */
 class MultiEffectiveListTest {
 
+    /** The latest end is not necessarily the last element's: the last to start can end before an earlier one. */
+    @Test
+    void testMaxDateWithOverlaps() {
+        MultiEffectiveList<Term> candidate = new MultiEffectiveList<>(Arrays.asList(Term.of("long", 1990, 2010), Term.of("short", 1995, 2000)));
+        assertThat(candidate.getMaxDate(), is(LocalDate.of(2010, 1, 1)));
+        assertThat(candidate.getMinDate(), is(LocalDate.of(1990, 1, 1)));
+    }
+
     private Term r1;
     private Term r2;
     private Term r3;
