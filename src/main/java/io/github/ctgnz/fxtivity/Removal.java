@@ -6,10 +6,11 @@ import java.util.SortedSet;
 /**
  * What removing elements from a succession that allows no gaps does about the gap it would leave.
  * <p>
- * Removing the first or last element never leaves a gap, nor does any removal from a succession that allows gaps; this decides only the rest. It is chosen when the succession is
- * created, because it follows from what the succession models: whether a removed holder's time passes to a neighbour, and to which, or is a mistake to report.
+ * Removing the first or last element never leaves a gap, nor does any removal from a succession that allows gaps; this decides only the rest. It is chosen for each removal,
+ * because the same succession can be edited both ways: whether a removed holder's time passes to a neighbour, and to which, or the removal is a mistake to report. A removal that
+ * is not told - {@code remove(int)}, {@code clear()}, an iterator - is {@link #Refused}.
  *
- * @see SingleEffectiveList#SingleEffectiveList(boolean, Removal)
+ * @see SingleEffectiveList#remove(int, Removal)
  */
 public enum Removal {
 

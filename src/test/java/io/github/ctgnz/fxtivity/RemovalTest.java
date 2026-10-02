@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 import javafx.collections.ListChangeListener;
@@ -20,7 +21,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 /**
- * Removing elements from a succession that allows no gaps: refused, or the gap closed by a neighbour, as chosen when the succession was created - on every path that removes.
+ * Removing elements from a succession that allows no gaps: refused, or the gap closed by a neighbour, as each removal says - and refused by every removal that cannot say.
  * <p>
  * The effective date is 1955 throughout, in b.
  *
@@ -51,12 +52,18 @@ class RemovalTest {
         return LocalDate.of(year, 1, 1);
     }
 
-    private SingleEffectiveList<Term> abcd(Removal removal) {
-        return new SingleEffectiveList<>(List.of(a, b, c, d), false, removal);
+    private SingleEffectiveList<Term> abcd() {
+        return new SingleEffectiveList<>(List.of(a, b, c, d));
     }
 
-    /** Every way of removing b alone, or b and c together - each leaving a gap between a and d or c. */
-    private List<Consumer<SingleEffectiveList<Term>>> middleRemovals() {
+    /** Every removal that is told what to do, removing b alone or b and c together - each leaving a gap. */
+    private List<BiConsumer<SingleEffectiveList<Term>, Removal>> toldRemovals() {
+        return List.of((list, removal) -> list.remove(1, removal), (list, removal) -> list.remove(b, removal), (list, removal) -> list.removeAll(List.of(b), removal),
+            (list, removal) -> list.removeAll(List.of(b, c), removal), (list, removal) -> list.retainAll(List.of(a, d), removal), (list, removal) -> list.removeIf(term -> term == b, removal));
+    }
+
+    /** Every removal that cannot be told, removing b alone or b and c together. */
+    private List<Consumer<SingleEffectiveList<Term>>> untoldRemovals() {
         return List.of(list -> list.remove(1), list -> list.remove(b), list -> list.removeAll(List.of(b)), list -> list.removeAll(List.of(b, c)), list -> list.retainAll(List.of(a, d)),
             list -> list.removeIf(term -> term == b), list -> list.subList(1, 3).clear(), list -> {
                 Iterator<Term> iterator = list.iterator();
@@ -66,57 +73,38 @@ class RemovalTest {
             });
     }
 
-    @Test
-    void testRefusedIsTheDefault() {
-        assertThat(new SingleEffectiveList<Term>().getRemoval(), is(Removal.Refused));
-        assertThat(new SingleEffectiveList<>(List.of(a, b)).getRemoval(), is(Removal.Refused));
-        assertThat(new EffectiveMap<String, Term>().getRemoval(), is(Removal.Refused));
+    private void assertRefusedAndUnchanged(Consumer<SingleEffectiveList<Term>> removal) {
+        init();
+        SingleEffectiveList<Term> list = abcd();
+        List<Object> fired = new ArrayList<>();
+        list.addListener((ListChangeListener<Term>) fired::add);
+        assertThrows(IllegalArgumentException.class, () -> removal.accept(list));
+        assertThat(list, contains(a, b, c, d));
+        assertThat(fired, is(empty()));
     }
 
-    /** Refused on every path, and a refused removal changes nothing and announces nothing. */
+    /** Refused, a removal changes nothing and announces nothing. */
     @Test
-    void testARemovalLeavingAGapIsRefused() {
-        for (Consumer<SingleEffectiveList<Term>> removal : middleRemovals()) {
-            init();
-            SingleEffectiveList<Term> list = abcd(Removal.Refused);
-            List<Object> fired = new ArrayList<>();
-            list.addListener((ListChangeListener<Term>) fired::add);
-            assertThrows(IllegalArgumentException.class, () -> removal.accept(list));
-            assertThat(list, contains(a, b, c, d));
-            assertThat(fired, is(empty()));
+    void testRefused() {
+        for (BiConsumer<SingleEffectiveList<Term>, Removal> removal : toldRemovals()) {
+            assertRefusedAndUnchanged(list -> removal.accept(list, Removal.Refused));
         }
     }
 
-    /** Removing from either end, or a whole run at an end, leaves no gap - so it is never refused, and nothing else moves. */
+    /** A removal that is not told what to do refuses to leave a gap. */
     @Test
-    void testTheEndsCanAlwaysBeRemoved() {
-        SingleEffectiveList<Term> list = abcd(Removal.Refused);
-        list.remove(0);
-        assertThat(list, contains(b, c, d));
-        list.remove(d);
-        assertThat(list, contains(b, c));
-
-        init();
-        list = abcd(Removal.Refused);
-        list.subList(2, 4).clear();
-        assertThat("a run at the end, removed at once", list, contains(a, b));
-
-        init();
-        list = abcd(Removal.Refused);
-        list.removeAll(List.of(a, b));
-        assertThat(list, contains(c, d));
-        assertThat(c.getStart(), is(year(1960)));
-
-        list.clear();
-        assertThat(list, is(empty()));
+    void testRefusedIsTheDefault() {
+        for (Consumer<SingleEffectiveList<Term>> removal : untoldRemovals()) {
+            assertRefusedAndUnchanged(removal);
+        }
     }
 
     @Test
     void testExtendsPrevious() {
-        for (Consumer<SingleEffectiveList<Term>> removal : middleRemovals()) {
+        for (BiConsumer<SingleEffectiveList<Term>, Removal> removal : toldRemovals()) {
             init();
-            SingleEffectiveList<Term> list = abcd(Removal.ExtendsPrevious);
-            removal.accept(list);
+            SingleEffectiveList<Term> list = abcd();
+            removal.accept(list, Removal.ExtendsPrevious);
             assertThat("a now runs up to the next start", a.getEnd(), is(list.get(1).getStart()));
             assertThat(list.hasGaps(), is(false));
             assertThat("a is now in effect on 1955", list.effective(), contains(a));
@@ -125,10 +113,10 @@ class RemovalTest {
 
     @Test
     void testStartsNextEarlier() {
-        for (Consumer<SingleEffectiveList<Term>> removal : middleRemovals()) {
+        for (BiConsumer<SingleEffectiveList<Term>, Removal> removal : toldRemovals()) {
             init();
-            SingleEffectiveList<Term> list = abcd(Removal.StartsNextEarlier);
-            removal.accept(list);
+            SingleEffectiveList<Term> list = abcd();
+            removal.accept(list, Removal.StartsNextEarlier);
             Term next = list.get(1);
             assertThat("the next now starts where a ends", next.getStart(), is(year(1950)));
             assertThat(list.hasGaps(), is(false));
@@ -136,39 +124,71 @@ class RemovalTest {
         }
     }
 
+    /** The same list can be edited both ways, one removal at a time. */
+    @Test
+    void testEachRemovalChooses() {
+        SingleEffectiveList<Term> list = abcd();
+        list.remove(b, Removal.ExtendsPrevious);
+        assertThat(a.getEnd(), is(year(1960)));
+        list.remove(c, Removal.StartsNextEarlier);
+        assertThat(d.getStart(), is(year(1960)));
+        assertThat(list, contains(a, d));
+        assertThrows(IllegalArgumentException.class, () -> new SingleEffectiveList<>(List.of(a, d, Term.of("e", 1980, 1990))).remove(d));
+    }
+
+    /** Removing from either end, or a whole run at an end, leaves no gap - so it is never refused, and nothing else moves. */
+    @Test
+    void testTheEndsCanAlwaysBeRemoved() {
+        SingleEffectiveList<Term> list = abcd();
+        list.remove(0);
+        assertThat(list, contains(b, c, d));
+        list.remove(d);
+        assertThat(list, contains(b, c));
+
+        init();
+        list = abcd();
+        list.subList(2, 4).clear();
+        assertThat("a run at the end, removed at once", list, contains(a, b));
+
+        init();
+        list = abcd();
+        list.removeAll(List.of(a, b), Removal.ExtendsPrevious);
+        assertThat(list, contains(c, d));
+        assertThat("no gap, so nothing moved", c.getStart(), is(year(1960)));
+
+        list.clear();
+        assertThat(list, is(empty()));
+    }
+
     /** The removal and the neighbour's new dates are one change. */
     @Test
     void testClosingAGapIsOneChange() {
-        SingleEffectiveList<Term> list = abcd(Removal.ExtendsPrevious);
+        SingleEffectiveList<Term> list = abcd();
         List<Object> fired = new ArrayList<>();
         list.addListener((ListChangeListener<Term>) fired::add);
-        list.remove(b);
+        list.remove(b, Removal.ExtendsPrevious);
         assertThat(fired, hasSize(1));
     }
 
-    /** Where gaps are allowed, removing leaves the gap and moves nothing, whatever the removal. */
+    /** Where gaps are allowed, removing leaves the gap and moves nothing, whatever the removal says. */
     @Test
     void testGapsAllowed() {
-        SingleEffectiveList<Term> list = new SingleEffectiveList<>(List.of(a, b, c), true, Removal.ExtendsPrevious);
-        list.remove(b);
+        SingleEffectiveList<Term> list = new SingleEffectiveList<>(List.of(a, b, c), true);
+        list.remove(b, Removal.ExtendsPrevious);
         assertThat(list, contains(a, c));
         assertThat(a.getEnd(), is(year(1950)));
         assertThat(c.getStart(), is(year(1960)));
     }
 
     @Test
-    void testAMapPassesItOn() {
-        EffectiveMap<String, Term> refusing = new EffectiveMap<>();
-        refusing.load(Map.of("seat", List.of(a, b, c)));
-        assertThrows(IllegalArgumentException.class, () -> refusing.remove("seat", b));
-        assertThat(refusing.get("seat"), contains(a, b, c));
-
-        init();
-        EffectiveMap<String, Term> closing = new EffectiveMap<>(false, Removal.ExtendsPrevious);
-        closing.load(Map.of("seat", List.of(a, b, c)));
-        assertThat(closing.remove("seat", b), is(true));
+    void testAMap() {
+        EffectiveMap<String, Term> map = new EffectiveMap<>();
+        map.load(Map.of("seat", List.of(a, b, c)));
+        assertThrows(IllegalArgumentException.class, () -> map.remove("seat", b));
+        assertThat(map.get("seat"), contains(a, b, c));
+        assertThat(map.remove("seat", b, Removal.ExtendsPrevious), is(true));
         assertThat(a.getEnd(), is(year(1960)));
-        assertThat(closing.getEffectiveRecords().effective(), contains(a));
+        assertThat(map.getEffectiveRecords().effective(), contains(a));
     }
 
 }

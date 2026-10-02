@@ -7,7 +7,6 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.NavigableMap;
-import java.util.Objects;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
@@ -42,7 +41,6 @@ public class EffectiveMap<K extends Comparable<K>, E extends IEffectiveEntity> {
     public final BooleanProperty gapsAllowed = new SimpleBooleanProperty();
     // Every history handed out, including any that are empty - so an editor holding one keeps writing to the map after removing its last record.
     private final NavigableMap<K, SingleEffectiveList<E>> histories;
-    private final Removal removal;
     private final AllRecords<E> effectiveRecords = new AllRecords<>();
     private final ListChangeListener<E> relay = effectiveRecords::relay;
 
@@ -58,20 +56,7 @@ public class EffectiveMap<K extends Comparable<K>, E extends IEffectiveEntity> {
      *            whether a key's history may have gaps
      */
     public EffectiveMap(boolean gapsAllowed) {
-        this(gapsAllowed, Removal.Refused);
-    }
-
-    /**
-     * An empty map, with keys in natural order.
-     *
-     * @param gapsAllowed
-     *            whether a key's history may have gaps
-     * @param removal
-     *            what removing a record from a key's history does about the gap it would leave, while gaps are not allowed
-     */
-    public EffectiveMap(boolean gapsAllowed, Removal removal) {
         this.gapsAllowed.set(gapsAllowed);
-        this.removal = Objects.requireNonNull(removal);
         this.histories = new TreeMap<>();
     }
 
@@ -84,22 +69,7 @@ public class EffectiveMap<K extends Comparable<K>, E extends IEffectiveEntity> {
      *            the order to hold keys in
      */
     public EffectiveMap(boolean gapsAllowed, Comparator<K> keyComparator) {
-        this(gapsAllowed, Removal.Refused, keyComparator);
-    }
-
-    /**
-     * An empty map.
-     *
-     * @param gapsAllowed
-     *            whether a key's history may have gaps
-     * @param removal
-     *            what removing a record from a key's history does about the gap it would leave, while gaps are not allowed
-     * @param keyComparator
-     *            the order to hold keys in
-     */
-    public EffectiveMap(boolean gapsAllowed, Removal removal, Comparator<K> keyComparator) {
         this.gapsAllowed.set(gapsAllowed);
-        this.removal = Objects.requireNonNull(removal);
         this.histories = new TreeMap<>(keyComparator);
     }
 
@@ -170,7 +140,7 @@ public class EffectiveMap<K extends Comparable<K>, E extends IEffectiveEntity> {
      */
     public SingleEffectiveList<E> getRecords(K key) {
         return histories.computeIfAbsent(key, k -> {
-            SingleEffectiveList<E> history = new SingleEffectiveList<>(isGapsAllowed(), removal);
+            SingleEffectiveList<E> history = new SingleEffectiveList<>(isGapsAllowed());
             history.gapsAllowed.bind(gapsAllowed);
             history.addListener(relay);
             return history;
@@ -192,15 +162,6 @@ public class EffectiveMap<K extends Comparable<K>, E extends IEffectiveEntity> {
             }
         });
         return Collections.unmodifiableSortedMap(source);
-    }
-
-    /**
-     * What removing a record from a key's history does about the gap it would leave, while gaps are not allowed.
-     *
-     * @return the removal
-     */
-    public Removal getRemoval() {
-        return removal;
     }
 
     /**
@@ -302,8 +263,25 @@ public class EffectiveMap<K extends Comparable<K>, E extends IEffectiveEntity> {
      * @return true if the map changed
      */
     public boolean remove(K key, E value) {
+        return remove(key, value, Removal.Refused);
+    }
+
+    /**
+     * Removes {@code value} from {@code key}'s history, doing as {@code removal} says about any gap that leaves.
+     *
+     * @param key
+     *            the key
+     * @param value
+     *            the record
+     * @param removal
+     *            what to do about the gap, if the record was between two others in a history that allows none
+     * @return true if the map changed
+     * @throws IllegalArgumentException
+     *             if the removal would leave a gap and is {@linkplain Removal#Refused refused}
+     */
+    public boolean remove(K key, E value, Removal removal) {
         SingleEffectiveList<E> history = histories.get(key);
-        return history != null && history.remove(value);
+        return history != null && history.remove(value, removal);
     }
 
     /**

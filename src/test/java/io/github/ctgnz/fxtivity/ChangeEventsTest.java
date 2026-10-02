@@ -168,11 +168,11 @@ class ChangeEventsTest {
     void testRemovalClosingAGap() {
         for (Removal removal : List.of(Removal.ExtendsPrevious, Removal.StartsNextEarlier)) {
             init();
-            SingleEffectiveList<Term> list = new SingleEffectiveList<>(List.of(a, b, c), false, removal);
+            SingleEffectiveList<Term> list = new SingleEffectiveList<>(List.of(a, b, c));
             Mirror<Term> mirror = new Mirror<>(list);
             Mirror<Term> effective = new Mirror<>(list.effective());
             Effectivity.forDate(LocalDate.of(1955, 1, 1));
-            list.removeAll(List.of(b));
+            list.removeAll(List.of(b), removal);
             assertMirrored(list, mirror);
             assertThat(effective.copy, is(list.effective()));
             assertThat(effective.copy, hasSize(1));
