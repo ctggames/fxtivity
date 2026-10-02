@@ -442,11 +442,21 @@ class SingleEffectiveListTest {
         assertThat(candidate.indexOf(r7), is(1));
     }
 
-    /** Adding an overlapping element at an index is refused with {@link ArrayIndexOutOfBoundsException}. */
+    /** Adding an overlapping element at an index is refused with {@link IllegalArgumentException}: the element, not the index, is what cannot be added. */
     @Test
     void testAddIndexInvalid() {
         SingleEffectiveList<Term> candidate = new SingleEffectiveList<>(Arrays.asList(r1, r4), true);
-        assertThrows(ArrayIndexOutOfBoundsException.class, () -> candidate.add(2, r6));
+        assertThrows(IllegalArgumentException.class, () -> candidate.add(2, r6));
+    }
+
+    /** Adding at an index is held to the same gap rule as adding without one. */
+    @Test
+    void testAddIndexGapsNotAllowed() {
+        SingleEffectiveList<Term> candidate = new SingleEffectiveList<>(Arrays.asList(r3, r4), false);
+        assertThrows(IllegalArgumentException.class, () -> candidate.add(0, r1));
+        assertThat(candidate, contains(r3, r4));
+        candidate.add(0, r2);
+        assertThat(candidate, contains(r2, r3, r4));
     }
 
 }

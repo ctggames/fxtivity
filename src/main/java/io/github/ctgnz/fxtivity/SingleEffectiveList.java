@@ -85,6 +85,14 @@ public class SingleEffectiveList<E extends IEffectiveEntity> extends EffectiveLi
     }
 
     @Override
+    public void add(int index, E element) {
+        if (!isGapsAllowed() && leavesGap(element)) {
+            throw new IllegalArgumentException("Gaps are not allowed");
+        }
+        super.add(index, element);
+    }
+
+    @Override
     public boolean addAll(Collection<? extends E> collection) {
         for (E element : collection) {
             if (!add(element)) {
