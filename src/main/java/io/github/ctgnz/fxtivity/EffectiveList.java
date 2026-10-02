@@ -193,6 +193,37 @@ public abstract class EffectiveList<E extends IEffectiveEntity> extends Modifiab
         return sourceList.stream().filter(e -> !e.equals(element)).anyMatch(existing -> existing.overlaps(element));
     }
 
+    /**
+     * Changes {@code element}'s dates, if the new ones keep to the collection's rules.
+     * <p>
+     * This is how an element's dates are changed while it is in a collection. Setting them on the element directly bypasses the collection: nothing checks them, the collection's
+     * date order is left wrong, and {@link #effective()} does not follow. Here the new dates are checked first, and if they are refused nothing changes. Otherwise the element
+     * moves to its new place by date, announced as one change, and {@link #effective()} follows.
+     *
+     * @param element
+     *            an element of this collection
+     * @param start
+     *            the new first date in effect
+     * @param end
+     *            the new first date no longer in effect
+     * @return true if the dates were changed; false if they were refused, or {@code element} is not in this collection
+     */
+    public boolean reschedule(E element, LocalDate start, LocalDate end) {
+        int index = sourceList.indexOf(element);
+        if (index < 0) {
+            return false;
+        }
+        DateRange dates = Effectivity.create(start, end).getEffectiveDates();
+        if (!isOverlapsAllowed() && sourceList.stream().filter(other -> other != element).anyMatch(other -> other.overlaps(dates))) {
+            return false;
+        }
+        if (opensGap(index, start, end)) {
+            return false;
+        }
+        move(index, start, end);
+        return true;
+    }
+
     @Override
     public E set(int index, E element) {
         throw new UnsupportedOperationException("EffectiveList can only be ordered by date");
@@ -226,6 +257,25 @@ public abstract class EffectiveList<E extends IEffectiveEntity> extends Modifiab
     @Override
     protected E doSet(int index, E element) {
         return sourceList.set(index, element);
+    }
+
+    // Whether moving the element at index to the new dates would leave a period with nothing in effect, where gaps are not allowed.
+    boolean opensGap(int index, LocalDate start, LocalDate end) {
+        return false;
+    }
+
+    // Gives the element at index new dates and moves it to its place by date, as one change. Unchecked: callers have already applied the rules.
+    // Calls the base class's add and remove directly, so the move is not refused by the checks it has already passed.
+    void move(int index, LocalDate start, LocalDate end) {
+        beginChange();
+        try {
+            E element = super.remove(index);
+            element.setStart(start);
+            element.setEnd(end);
+            super.add(indexByDate(element), element);
+        } finally {
+            endChange();
+        }
     }
 
     // Whether any two elements overlap. Compares each only with the one after it, which finds any overlap provided the list is in date order.
