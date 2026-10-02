@@ -8,6 +8,10 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
+import java.util.function.Predicate;
 
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -27,8 +31,9 @@ import javafx.collections.transformation.FilteredList;
  */
 public class SingleEffectiveList<E extends IEffectiveEntity> extends EffectiveList<E> {
     public final BooleanProperty gapsAllowed = new SimpleBooleanProperty();
+    private final Removal removal;
 
-    /** An empty succession that allows no gaps. */
+    /** An empty succession that allows no gaps, and refuses a removal that would leave one. */
     public SingleEffectiveList() {
         this(false);
     }
@@ -44,7 +49,19 @@ public class SingleEffectiveList<E extends IEffectiveEntity> extends EffectiveLi
     }
 
     /**
-     * A succession holding {@code source}'s elements, allowing no gaps.
+     * An empty succession.
+     *
+     * @param gapsAllowed
+     *            whether gaps between elements are allowed
+     * @param removal
+     *            what removing an element does about the gap it would leave, while gaps are not allowed
+     */
+    public SingleEffectiveList(boolean gapsAllowed, Removal removal) {
+        this(new ArrayList<>(), gapsAllowed, removal);
+    }
+
+    /**
+     * A succession holding {@code source}'s elements, allowing no gaps, and refusing a removal that would leave one.
      *
      * @param source
      *            the initial elements
@@ -54,7 +71,7 @@ public class SingleEffectiveList<E extends IEffectiveEntity> extends EffectiveLi
     }
 
     /**
-     * A succession holding {@code source}'s elements.
+     * A succession holding {@code source}'s elements, refusing a removal that would leave a gap while gaps are not allowed.
      *
      * @param source
      *            the initial elements
@@ -63,10 +80,27 @@ public class SingleEffectiveList<E extends IEffectiveEntity> extends EffectiveLi
      * @throws IllegalArgumentException
      *             if any of the elements overlap, or gaps are not allowed and the elements have one
      */
+    public SingleEffectiveList(List<E> source, boolean gapsAllowed) {
+        this(source, gapsAllowed, Removal.Refused);
+    }
+
+    /**
+     * A succession holding {@code source}'s elements.
+     *
+     * @param source
+     *            the initial elements
+     * @param gapsAllowed
+     *            whether gaps between elements are allowed
+     * @param removal
+     *            what removing an element does about the gap it would leave, while gaps are not allowed
+     * @throws IllegalArgumentException
+     *             if any of the elements overlap, or gaps are not allowed and the elements have one
+     */
     // Calls the overridable hasGaps() before a subclass has finished initialising. Safe while no subclass overrides it, which none does.
     @SuppressWarnings("this-escape")
-    public SingleEffectiveList(List<E> source, boolean gapsAllowed) {
+    public SingleEffectiveList(List<E> source, boolean gapsAllowed, Removal removal) {
         super(source);
+        this.removal = Objects.requireNonNull(removal);
         if (hasOverlaps(sourceList)) {
             throw new IllegalArgumentException("Overlaps are not allowed");
         }
@@ -310,6 +344,15 @@ public class SingleEffectiveList<E extends IEffectiveEntity> extends EffectiveLi
     }
 
     /**
+     * What removing an element does about the gap it would leave, while gaps are not allowed.
+     *
+     * @return the removal
+     */
+    public Removal getRemoval() {
+        return removal;
+    }
+
+    /**
      * Whether gaps between elements are allowed.
      *
      * @return true if allowed
@@ -321,6 +364,104 @@ public class SingleEffectiveList<E extends IEffectiveEntity> extends EffectiveLi
     @Override
     public boolean isOverlapsAllowed() {
         return false;
+    }
+
+    /**
+     * Removes the element at {@code index}. Removing it from between two others, while gaps are not allowed, is decided by {@link #getRemoval()}.
+     *
+     * @throws IllegalArgumentException
+     *             if the removal would leave a gap and is {@linkplain Removal#Refused refused}
+     */
+    @Override
+    public E remove(int index) {
+        E element = get(index);
+        remove(new TreeSet<>(Set.of(index)));
+        return element;
+    }
+
+    /** As {@link #remove(int)}, for every element removed at once. */
+    @Override
+    public boolean removeAll(Collection<?> collection) {
+        return remove(indicesWhere(collection::contains));
+    }
+
+    /** As {@link #remove(int)}, for every element removed at once. */
+    @Override
+    public boolean retainAll(Collection<?> collection) {
+        return remove(indicesWhere(element -> !collection.contains(element)));
+    }
+
+    /** As {@link #remove(int)}, for every element removed at once. */
+    @Override
+    public boolean removeIf(Predicate<? super E> filter) {
+        return remove(indicesWhere(filter));
+    }
+
+    @Override
+    protected void removeRange(int fromIndex, int toIndex) {
+        SortedSet<Integer> indices = new TreeSet<>();
+        for (int i = fromIndex; i < toIndex; i++) {
+            indices.add(i);
+        }
+        remove(indices);
+    }
+
+    /** A gap a removal would leave, between two elements that remain. */
+    record Gap<E>(E previous, E next) {
+    }
+
+    // Removes the elements at indices as one change, unchecked. The base class removes one at a time, so this is the only place that does.
+    void removeAt(SortedSet<Integer> indices) {
+        beginChange();
+        try {
+            for (int index : indices.reversed()) {
+                super.remove(index);
+            }
+        } finally {
+            endChange();
+        }
+    }
+
+    private SortedSet<Integer> indicesWhere(Predicate<? super E> filter) {
+        SortedSet<Integer> indices = new TreeSet<>();
+        for (int i = 0; i < size(); i++) {
+            if (filter.test(get(i))) {
+                indices.add(i);
+            }
+        }
+        return indices;
+    }
+
+    // Judges the whole removal before anything changes: removed one at a time, the end of a run of elements would look like the middle of the list.
+    private boolean remove(SortedSet<Integer> indices) {
+        if (indices.isEmpty()) {
+            return false;
+        }
+        List<Gap<E>> gaps = new ArrayList<>();
+        if (!isGapsAllowed()) {
+            E previous = null;
+            boolean removedSince = false;
+            for (int i = 0; i < size(); i++) {
+                if (indices.contains(i)) {
+                    removedSince = true;
+                    continue;
+                }
+                E next = get(i);
+                if (removedSince && previous != null && hasGap(previous, next)) {
+                    gaps.add(new Gap<>(previous, next));
+                }
+                previous = next;
+                removedSince = false;
+            }
+        }
+        // One change for the removal and any neighbour moved to close a gap.
+        beginChange();
+        try {
+            removal.remove(this, indices, gaps);
+        } finally {
+            endChange();
+        }
+        return true;
     }
 
     /**
