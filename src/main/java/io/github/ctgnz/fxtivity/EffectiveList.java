@@ -8,8 +8,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
-import javafx.beans.property.ObjectProperty;
-import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.collections.FXCollections;
 import javafx.collections.ModifiableObservableListBase;
@@ -33,13 +31,11 @@ public abstract class EffectiveList<E extends IEffectiveEntity> extends Modifiab
 
     /** Every element, in date order. */
     protected final ObservableList<E> sourceList;
-    /** The elements in effect on the filter date. */
+    /** The elements in effect on the application's effective date. */
     protected final FilteredList<E> filtered;
-    protected final ObjectProperty<LocalDate> filterDate = new SimpleObjectProperty<>(Effectivity.when());
-    /** Keeps {@link #filterDate} in step with the application's effective date. */
-    protected final ChangeListener<LocalDate> defaultDateListener = (obs, oldValue, newValue) -> {
-        this.filterDate.set(Effectivity.when());
-    };
+    // Re-filters whenever the effective date moves. Held in a field because it is registered weakly: the list keeps it alive for exactly
+    // as long as the list itself lives, so a discarded list stops listening rather than being pinned by the date forever.
+    private final ChangeListener<LocalDate> effectiveDateListener = (obs, oldValue, newValue) -> updateFilter();
 
     /** An empty list. */
     public EffectiveList() {
@@ -59,8 +55,7 @@ public abstract class EffectiveList<E extends IEffectiveEntity> extends Modifiab
         this.sourceList = FXCollections.observableArrayList(source);
         sourceList.sort(DATE_ORDER);
         this.filtered = sourceList.filtered(this::isActive);
-        Effectivity.listen(defaultDateListener);
-        filterDate.addListener((obs, oldValue, newValue) -> updateFilter());
+        Effectivity.listen(effectiveDateListener);
     }
 
     @Override
@@ -119,25 +114,6 @@ public abstract class EffectiveList<E extends IEffectiveEntity> extends Modifiab
         return filtered.size();
     }
 
-    /**
-     * The date the {@linkplain #effective() effective view} is filtered on.
-     *
-     * @return the property
-     */
-    public ObjectProperty<LocalDate> filterDateProperty() {
-        return filterDate;
-    }
-
-    /**
-     * Filters the {@linkplain #effective() effective view} on {@code viewDate}.
-     *
-     * @param viewDate
-     *            the date to filter on
-     */
-    public void forDate(LocalDate viewDate) {
-        this.filterDate.set(viewDate);
-    }
-
     @Override
     public E get(int index) {
         return sourceList.get(index);
@@ -162,15 +138,6 @@ public abstract class EffectiveList<E extends IEffectiveEntity> extends Modifiab
      */
     public Optional<E> getEffectiveRecord() {
         return filtered.size() == 1 ? Optional.of(filtered.getFirst()) : Optional.empty();
-    }
-
-    /**
-     * The date the {@linkplain #effective() effective view} is filtered on.
-     *
-     * @return the date
-     */
-    public LocalDate getFilterDate() {
-        return filterDate.get();
     }
 
     @Override
@@ -279,17 +246,17 @@ public abstract class EffectiveList<E extends IEffectiveEntity> extends Modifiab
     }
 
     /**
-     * Whether {@code effectiveRecord} is in effect on the filter date.
+     * Whether {@code effectiveRecord} is in effect on the application's effective date.
      *
      * @param effectiveRecord
      *            the element
      * @return true if in effect
      */
     protected boolean isActive(E effectiveRecord) {
-        return effectiveRecord.getEffectivity().contains(filterDate.get());
+        return effectiveRecord.getEffectivity().contains(Effectivity.when());
     }
 
-    /** Re-applies the filter after the filter date moves. */
+    /** Re-applies the filter after the effective date moves. */
     protected void updateFilter() {
         filtered.setPredicate(null);
         filtered.setPredicate(this::isActive);
