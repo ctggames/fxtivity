@@ -1,19 +1,21 @@
 package io.github.ctgnz.fxtivity;
 
-import java.util.ArrayList;
+import java.time.LocalDate;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.NavigableMap;
-import java.util.NavigableSet;
+import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.function.Predicate;
 
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
-import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener;
+import javafx.collections.ObservableList;
 
 /**
  * Successions kept by key: for each key, the things that held it over time.
@@ -21,8 +23,11 @@ import javafx.collections.FXCollections;
  * Suits anything with several positions that each change hands - the seats on a board, the regions of a country - where each position has its own history. Keys are held in order,
  * and each key's records in date order.
  * <p>
- * {@link #getRecords(Comparable)} gives one key's history as a {@link SingleEffectiveList}; {@link #getEffectiveRecords()} gives every record across all keys as a
- * {@link MultiEffectiveList}.
+ * Each key's history is a live {@link SingleEffectiveList}, given by {@link #getRecords(Comparable)}: the map's own, so its rules apply to every record put under the key, and an
+ * editor changes the map by changing it. {@link #getEffectiveRecords()} gives every record across all keys as one {@link MultiEffectiveList}, kept in step with the keys'
+ * histories.
+ * <p>
+ * A key is in the map while its history has at least one record.
  *
  * @param <K>
  *            the key type
@@ -32,11 +37,11 @@ import javafx.collections.FXCollections;
  */
 public class EffectiveMap<K extends Comparable<K>, E extends IEffectiveEntity> {
 
-    private static final Comparator<IEffectiveEntity> RECORD_ORDER = Comparator.comparing(IEffectiveEntity::getStart).thenComparing(IEffectiveEntity::getEnd);
-
     public final BooleanProperty gapsAllowed = new SimpleBooleanProperty();
-    private final NavigableMap<K, NavigableSet<E>> delegate;
-    private MultiEffectiveList<E> effectiveRecords;
+    // Every history handed out, including any that are empty - so an editor holding one keeps writing to the map after removing its last record.
+    private final NavigableMap<K, SingleEffectiveList<E>> histories;
+    private final AllRecords<E> effectiveRecords = new AllRecords<>();
+    private final ListChangeListener<E> relay = effectiveRecords::relay;
 
     /** An empty map, with keys in natural order and no gaps allowed. */
     public EffectiveMap() {
@@ -51,7 +56,7 @@ public class EffectiveMap<K extends Comparable<K>, E extends IEffectiveEntity> {
      */
     public EffectiveMap(boolean gapsAllowed) {
         this.gapsAllowed.set(gapsAllowed);
-        this.delegate = new TreeMap<>();
+        this.histories = new TreeMap<>();
     }
 
     /**
@@ -64,7 +69,7 @@ public class EffectiveMap<K extends Comparable<K>, E extends IEffectiveEntity> {
      */
     public EffectiveMap(boolean gapsAllowed, Comparator<K> keyComparator) {
         this.gapsAllowed.set(gapsAllowed);
-        this.delegate = new TreeMap<>(keyComparator);
+        this.histories = new TreeMap<>(keyComparator);
     }
 
     /**
@@ -85,11 +90,12 @@ public class EffectiveMap<K extends Comparable<K>, E extends IEffectiveEntity> {
      * @return true if it has
      */
     public boolean containsKey(K key) {
-        return delegate.containsKey(key);
+        SingleEffectiveList<E> history = histories.get(key);
+        return history != null && !history.isEmpty();
     }
 
     /**
-     * Whether a key's history may have gaps.
+     * Whether a key's history may have gaps. Every key's history follows it.
      *
      * @return the property
      */
@@ -104,32 +110,57 @@ public class EffectiveMap<K extends Comparable<K>, E extends IEffectiveEntity> {
      *            the key
      * @return the records, empty if the key has none
      */
-    public SortedSet<E> get(K key) {
-        NavigableSet<E> records = delegate.get(key);
-        return records == null ? Collections.emptySortedSet() : Collections.unmodifiableSortedSet(records);
+    public List<E> get(K key) {
+        SingleEffectiveList<E> history = histories.get(key);
+        return history == null ? Collections.emptyList() : history.getSourceList();
     }
 
     /**
      * Every record across all keys, as one list that allows overlaps.
+     * <p>
+     * Read-only, and live: it follows every change to the keys' histories. Changes are made through {@link #put(Comparable, IEffectiveEntity)},
+     * {@link #remove(Comparable, IEffectiveEntity)}, or a key's history.
      *
      * @return the records
      */
     public MultiEffectiveList<E> getEffectiveRecords() {
-        if (effectiveRecords == null) {
-            this.effectiveRecords = new MultiEffectiveList<>(FXCollections.observableArrayList(values()));
-        }
         return effectiveRecords;
     }
 
     /**
      * {@code key}'s history as a succession.
+     * <p>
+     * The map's own, live: changes made through it are changes to the map, with the succession's rules enforced. The same instance on every call, including for a key with no
+     * records yet - adding the first one puts the key in the map.
      *
      * @param key
      *            the key
-     * @return a new succession holding the key's records
+     * @return the key's history
      */
     public SingleEffectiveList<E> getRecords(K key) {
-        return new SingleEffectiveList<>(FXCollections.observableArrayList(get(key)), isGapsAllowed());
+        return histories.computeIfAbsent(key, k -> {
+            SingleEffectiveList<E> history = new SingleEffectiveList<>(isGapsAllowed());
+            history.gapsAllowed.bind(gapsAllowed);
+            history.addListener(relay);
+            return history;
+        });
+    }
+
+    /**
+     * The whole map, read-only: every key that has records, in key order, with its history in date order.
+     * <p>
+     * The histories are live; the set of keys is as it was when this was called.
+     *
+     * @return the map
+     */
+    public SortedMap<K, ObservableList<E>> getSourceMap() {
+        SortedMap<K, ObservableList<E>> source = new TreeMap<>(histories.comparator());
+        histories.forEach((key, history) -> {
+            if (!history.isEmpty()) {
+                source.put(key, history.getSourceList());
+            }
+        });
+        return Collections.unmodifiableSortedMap(source);
     }
 
     /**
@@ -147,20 +178,26 @@ public class EffectiveMap<K extends Comparable<K>, E extends IEffectiveEntity> {
      * @return true if empty
      */
     public boolean isEmpty() {
-        return delegate.isEmpty();
+        return effectiveRecords.isEmpty();
     }
 
     /**
-     * The keys that have records, in order.
+     * The keys that have records, in order, as they are when this is called.
      *
      * @return the keys
      */
     public SortedSet<K> keySet() {
-        return Collections.unmodifiableSortedSet(delegate.navigableKeySet());
+        SortedSet<K> keys = new TreeSet<>(histories.comparator());
+        histories.forEach((key, history) -> {
+            if (!history.isEmpty()) {
+                keys.add(key);
+            }
+        });
+        return Collections.unmodifiableSortedSet(keys);
     }
 
     /**
-     * Records {@code value} against {@code key}.
+     * Records {@code value} against {@code key}, if it keeps to the rules of the key's history.
      *
      * @param key
      *            the key
@@ -169,17 +206,11 @@ public class EffectiveMap<K extends Comparable<K>, E extends IEffectiveEntity> {
      * @return true if the map changed
      */
     public boolean put(K key, E value) {
-        if (delegate.computeIfAbsent(key, k -> new TreeSet<>(RECORD_ORDER)).add(value)) {
-            if (effectiveRecords != null) {
-                effectiveRecords.add(value);
-            }
-            return true;
-        }
-        return false;
+        return getRecords(key).add(value);
     }
 
     /**
-     * Records each of {@code values} against {@code key}.
+     * Records each of {@code values} against {@code key}, one at a time: each that keeps to the rules of the key's history is added, whether or not others are refused.
      *
      * @param key
      *            the key
@@ -190,14 +221,23 @@ public class EffectiveMap<K extends Comparable<K>, E extends IEffectiveEntity> {
     public boolean putAll(K key, Iterable<? extends E> values) {
         boolean changed = false;
         for (E value : values) {
-            // Created on the first record rather than up front, so an empty iterable leaves no empty key behind.
-            changed |= delegate.computeIfAbsent(key, k -> new TreeSet<>(RECORD_ORDER)).add(value);
+            changed |= put(key, value);
         }
-        if (changed) {
-            values.forEach(effectiveRecords::add);
-            return true;
-        }
-        return false;
+        return changed;
+    }
+
+    /**
+     * Removes {@code value} from {@code key}'s history.
+     *
+     * @param key
+     *            the key
+     * @param value
+     *            the record
+     * @return true if the map changed
+     */
+    public boolean remove(K key, E value) {
+        SingleEffectiveList<E> history = histories.get(key);
+        return history != null && history.remove(value);
     }
 
     /**
@@ -216,7 +256,7 @@ public class EffectiveMap<K extends Comparable<K>, E extends IEffectiveEntity> {
      * @return the count
      */
     public int size() {
-        return delegate.values().stream().mapToInt(Collection::size).sum();
+        return effectiveRecords.size();
     }
 
     /**
@@ -225,9 +265,73 @@ public class EffectiveMap<K extends Comparable<K>, E extends IEffectiveEntity> {
      * @return the records
      */
     public Collection<E> values() {
-        List<E> all = new ArrayList<>();
-        delegate.values().forEach(all::addAll);
-        return Collections.unmodifiableList(all);
+        return histories.values().stream().flatMap(Collection::stream).toList();
+    }
+
+    /** Every record across all keys: derived from the keys' histories, so it refuses every change made to it directly. */
+    private static final class AllRecords<E extends IEffectiveEntity> extends MultiEffectiveList<E> {
+
+        // Repeats a change to one key's history. Calls the base class's add and remove directly, which the overrides below refuse.
+        void relay(ListChangeListener.Change<? extends E> change) {
+            while (change.next()) {
+                for (E removed : change.getRemoved()) {
+                    super.remove(indexOf(removed));
+                }
+                for (E added : change.getAddedSubList()) {
+                    super.add(0, added);
+                }
+            }
+        }
+
+        @Override
+        public boolean add(E element) {
+            throw new UnsupportedOperationException("Every record belongs to a key: put it in the map");
+        }
+
+        @Override
+        public void add(int index, E element) {
+            throw new UnsupportedOperationException("Every record belongs to a key: put it in the map");
+        }
+
+        @Override
+        public boolean addAll(Collection<? extends E> collection) {
+            throw new UnsupportedOperationException("Every record belongs to a key: put it in the map");
+        }
+
+        @Override
+        public E remove(int index) {
+            throw new UnsupportedOperationException("Every record belongs to a key: remove it from the map");
+        }
+
+        @Override
+        public boolean reschedule(E element, LocalDate start, LocalDate end) {
+            throw new UnsupportedOperationException("Every record belongs to a key: reschedule it in its key's history");
+        }
+
+        @Override
+        public boolean setAll(Collection<? extends E> collection) {
+            throw new UnsupportedOperationException("Every record belongs to a key: put it in the map");
+        }
+
+        @Override
+        public boolean removeAll(Collection<?> collection) {
+            throw new UnsupportedOperationException("Every record belongs to a key: remove it from the map");
+        }
+
+        @Override
+        public boolean retainAll(Collection<?> collection) {
+            throw new UnsupportedOperationException("Every record belongs to a key: remove it from the map");
+        }
+
+        @Override
+        public boolean removeIf(Predicate<? super E> filter) {
+            throw new UnsupportedOperationException("Every record belongs to a key: remove it from the map");
+        }
+
+        @Override
+        protected void removeRange(int fromIndex, int toIndex) {
+            throw new UnsupportedOperationException("Every record belongs to a key: remove it from the map");
+        }
     }
 
 }
