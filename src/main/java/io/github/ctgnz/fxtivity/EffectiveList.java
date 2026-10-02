@@ -66,20 +66,16 @@ public abstract class EffectiveList<E extends IEffectiveEntity> extends Modifiab
         if (!isOverlapsAllowed() && overlaps(element)) {
             return false;
         }
-        if (super.add(element)) {
-            sourceList.sort(DATE_ORDER);
-            return true;
-        }
-        return false;
+        return super.add(element);
     }
 
+    /** The index is ignored: an element always takes its place by date. */
     @Override
     public void add(int index, E element) {
         if (!isOverlapsAllowed() && overlaps(element)) {
             throw new ArrayIndexOutOfBoundsException("Overlapping element is not allowed");
         }
-        super.add(index, element);
-        sourceList.sort(DATE_ORDER);
+        super.add(indexByDate(element), element);
     }
 
     @Override
@@ -87,11 +83,7 @@ public abstract class EffectiveList<E extends IEffectiveEntity> extends Modifiab
         if (!isOverlapsAllowed() && collection.stream().anyMatch(EffectiveList.this::overlaps)) {
             return false;
         }
-        if (super.addAll(collection)) {
-            sourceList.sort(DATE_ORDER);
-            return true;
-        }
-        return false;
+        return super.addAll(collection);
     }
 
     @Override
@@ -202,33 +194,18 @@ public abstract class EffectiveList<E extends IEffectiveEntity> extends Modifiab
     }
 
     @Override
-    public E remove(int index) {
-        E obj = get(index);
-        if (sourceList.remove(obj)) {
-            return obj;
-        }
-        return null;
-    }
-
-    @Override
     public E set(int index, E element) {
         throw new UnsupportedOperationException("EffectiveList can only be ordered by date");
     }
 
     @Override
     public boolean setAll(Collection<? extends E> collection) {
-        List<? extends E> list = new ArrayList<>(sourceList);
-        sourceList.clear();
-        if (super.addAll(collection)) {
-            sourceList.sort(DATE_ORDER);
-            if (!isOverlapsAllowed() && collection.stream().anyMatch(this::overlaps)) {
-                sourceList.clear();
-                sourceList.addAll(list);
-                return false;
-            }
-            return true;
+        List<E> sorted = new ArrayList<>(collection);
+        sorted.sort(DATE_ORDER);
+        if (!isOverlapsAllowed() && hasOverlaps(sorted)) {
+            return false;
         }
-        return false;
+        return super.setAll(sorted);
     }
 
     @Override
@@ -249,6 +226,25 @@ public abstract class EffectiveList<E extends IEffectiveEntity> extends Modifiab
     @Override
     protected E doSet(int index, E element) {
         return sourceList.set(index, element);
+    }
+
+    // Whether any two elements overlap. Compares each only with the one after it, which finds any overlap provided the list is in date order.
+    boolean hasOverlaps(List<E> sorted) {
+        for (int i = 1; i < sorted.size(); i++) {
+            if (sorted.get(i - 1).overlaps(sorted.get(i))) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    // Where element belongs by date: after every element that sorts before or alongside it, so equal elements keep the order they were added in.
+    private int indexByDate(E element) {
+        int index = sourceList.size();
+        while (index > 0 && DATE_ORDER.compare(sourceList.get(index - 1), element) > 0) {
+            index--;
+        }
+        return index;
     }
 
     /**
