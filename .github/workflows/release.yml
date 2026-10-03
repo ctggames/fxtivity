@@ -2,7 +2,7 @@
 #
 # Tag a commit whose pom version has had -SNAPSHOT removed, and whose tag equals that version:
 #
-#     mvn versions:set -DnewVersion=1.0.0 && git commit -am "Release 1.0.0"
+#     mvn versions:set -DnewVersion=1.0.0 -DprocessAllModules=true && git commit -am "Release 1.0.0"
 #     git tag 1.0.0 && git push origin master 1.0.0
 #
 # The deployment is staged on the Portal rather than published automatically - see autoPublish in the pom -
@@ -109,5 +109,6 @@ jobs:
       uses: ncipollo/release-action@v1
       with:
         allowUpdates: true
-        artifacts: "${{ github.workspace }}/target/*.jar"
+        # Every published module's jars. The parent publishes only a pom, and the root aggregator nothing.
+        artifacts: "${{ github.workspace }}/fxtivity-*/target/*.jar"
         token: ${{ secrets.GITHUB_TOKEN }}

@@ -50,7 +50,7 @@ An appointment that would overlap the incumbent is refused rather than quietly a
 ```xml
 <dependency>
     <groupId>io.github.ctgnz</groupId>
-    <artifactId>fxtivity</artifactId>
+    <artifactId>fxtivity-core</artifactId>
     <version>1.0.0</version>
 </dependency>
 ```
@@ -100,7 +100,7 @@ Reading then fills the collection you declared, configured as you declared it. A
 
 **[Read the scenarios at ctgnz.github.io/fxtivity](https://ctgnz.github.io/fxtivity/)**.
 
-They are Cucumber features in [`src/test/resources/features`](src/test/resources/features), written against Fowler's own example — people, companies and the employments between them — and extended with the cases his pattern leaves to others: a name that changes over time, an office with one holder at a time, and a board whose seats each have their own history.
+They are Cucumber features in [`fxtivity-core/src/test/resources/features`](fxtivity-core/src/test/resources/features), written against Fowler's own example — people, companies and the employments between them — and extended with the cases his pattern leaves to others: a name that changes over time, an office with one holder at a time, and a board whose seats each have their own history.
 
 | Feature | Covers |
 | --- | --- |
