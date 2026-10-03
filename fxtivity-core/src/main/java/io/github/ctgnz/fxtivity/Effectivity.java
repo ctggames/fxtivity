@@ -3,10 +3,8 @@ package io.github.ctgnz.fxtivity;
 import java.time.LocalDate;
 import java.util.Objects;
 
-import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.ReadOnlyObjectWrapper;
-import javafx.beans.property.SimpleObjectProperty;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -32,7 +30,7 @@ public class Effectivity {
     /** The end of a period that has no end. */
     public static final LocalDate FOREVER = LocalDate.of(9999, 12, 31);
     private static final ReadOnlyObjectWrapper<LocalDate> EDATE = new ReadOnlyObjectWrapper<>(LocalDate.now());
-    private static final ObjectProperty<DateRange> ERANGE = new SimpleObjectProperty<>(toEffectiveRange(LocalDate.now(), FOREVER));
+    private static final ReadOnlyObjectWrapper<DateRange> ERANGE = new ReadOnlyObjectWrapper<>(toEffectiveRange(LocalDate.now(), FOREVER));
 
     /**
      * The end of the active range.
@@ -50,6 +48,16 @@ public class Effectivity {
      */
     public static DateRange activeRange() {
         return ERANGE.get();
+    }
+
+    /**
+     * The active range, read-only: it is set with {@link #forDates(LocalDate, LocalDate, LocalDate)}. Listen to it or bind to it as to {@link #effectiveDateProperty()}, and with
+     * the same choice of a strong or a weak listener.
+     *
+     * @return the property
+     */
+    public static ReadOnlyObjectProperty<DateRange> activeRangeProperty() {
+        return ERANGE.getReadOnlyProperty();
     }
 
     /**

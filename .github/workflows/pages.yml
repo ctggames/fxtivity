@@ -41,7 +41,8 @@ jobs:
       # content worth publishing, whereas here the report is documentation and a red specification is worse
       # than yesterday's green one.
       - name: Run the scenarios, which write the report
-        run: mvn -B --no-transfer-progress test
+        # fxtivity-core only: the scenarios are there, and the controls' tests would need a display.
+        run: mvn -B --no-transfer-progress test -pl fxtivity-core -am
 
       - name: Assemble the site
         run: |

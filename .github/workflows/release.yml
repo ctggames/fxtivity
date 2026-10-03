@@ -83,19 +83,24 @@ jobs:
           exit 1
         fi
 
+    # fxtivity-controls' tests start the JavaFX toolkit, which needs a display: both builds below run
+    # under Xvfb, as CI does.
+    - name: Install Xvfb
+      run: sudo apt-get update && sudo apt-get install -y xvfb
+
     # Everything a release does except the two steps that cannot be undone.
     - name: Rehearse the release build
       if: github.event_name == 'workflow_dispatch' && inputs.mode == 'rehearse'
-      run: mvn -B --no-transfer-progress -Prelease verify
+      run: xvfb-run --auto-servernum mvn -B --no-transfer-progress -Prelease verify
       env:
         MAVEN_GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
 
     # Tests are not skipped here, unlike foxglove, which skips them because JavaFX blocks forever on a
-    # display-less runner. This suite needs no display and runs in under two seconds, so there is no reason
-    # to ship artifacts that were not tested on the exact commit being released.
+    # display-less runner. The controls' tests run under Xvfb instead, and the whole suite takes seconds, so
+    # there is no reason to ship artifacts that were not tested on the exact commit being released.
     - name: Publish to the Maven Central Portal
       if: github.event_name == 'push' || inputs.mode == 'publish'
-      run: mvn -B --no-transfer-progress -Prelease deploy
+      run: xvfb-run --auto-servernum mvn -B --no-transfer-progress -Prelease deploy
       env:
         MAVEN_USERNAME: ${{ secrets.CENTRAL_USERNAME }}
         MAVEN_PASSWORD: ${{ secrets.CENTRAL_PASSWORD }}

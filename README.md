@@ -57,6 +57,24 @@ An appointment that would overlap the incumbent is refused rather than quietly a
 
 Requires Java 25. Brings in `javafx-base` — beans and collections, nothing that starts a toolkit, so neither the library nor its tests need a display — and `jackson-annotations`, which declares how the model is serialised without making you depend on anything that serialises it.
 
+### The controls
+
+```xml
+<dependency>
+    <groupId>io.github.ctgnz</groupId>
+    <artifactId>fxtivity-controls</artifactId>
+    <version>1.0.0</version>
+</dependency>
+```
+
+A separate artifact, because controls need `javafx-controls` and a display. An application that only uses the model, such as a server or a batch tool, never takes either on.
+
+| | |
+| --- | --- |
+| **`EffectiveDatePicker`** | Sets the application's effective date, typically from the top menu bar where it is always in view. Steps back and forward by year, month or day, never outside the active range, and follows the date when anything else moves it. |
+| **`EffectiveDateCell`** | A day in any `DatePicker` that can only be chosen within the active range. This is how an editor keeps the dates it enters in range. |
+| **`EffectivePropertyPane`** | A starting point for an editor of an `EffectiveProperty`: its changes, one per row. |
+
 ## Writing and reading
 
 The model is plain Jackson. An entity's period is written as its `start` and `end`. An `EffectiveProperty` is written as its list of changes alone, with its owner restored from the owner's side by a managed reference, so it is never repeated:

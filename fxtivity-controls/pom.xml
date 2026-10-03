@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>io.github.ctgnz</groupId>
+        <artifactId>fxtivity-parent</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
+        <relativePath>../fxtivity-parent/pom.xml</relativePath>
+    </parent>
+
+    <artifactId>fxtivity-controls</artifactId>
+    <packaging>jar</packaging>
+
+    <name>fxtivity Controls</name>
+    <description>JavaFX controls for fxtivity: a picker that sets the application's effective date, a date cell that keeps dates within the active range, and a base for an editor of a value that changes over time.</description>
+    <url>https://github.com/ctgnz/fxtivity</url>
+
+    <dependencies>
+        <dependency>
+            <groupId>io.github.ctgnz</groupId>
+            <artifactId>fxtivity-core</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <!--
+            The controls are what need a toolkit, and so a display: the reason they are a module of
+            their own, so that a consumer of the model alone - a server, a batch tool - never sees one.
+            Their tests start the toolkit too, which on a display-less CI runner needs Xvfb.
+        -->
+        <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-controls</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.hamcrest</groupId>
+            <artifactId>hamcrest</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+</project>
