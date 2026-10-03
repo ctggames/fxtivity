@@ -13,7 +13,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
  *            the type of the wrapped value
  * @author ctg
  */
-public class EffectiveWrapper<V> implements IEffectiveEntity {
+public class EffectiveWrapper<V> implements Effective {
 
     private LocalDate start;
     private LocalDate end;

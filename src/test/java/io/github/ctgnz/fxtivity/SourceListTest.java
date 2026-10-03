@@ -77,7 +77,7 @@ class SourceListTest {
     @JsonPropertyOrder({
         "worker", "start", "end"
     })
-    static final class Shift implements IEffectiveEntity {
+    static final class Shift implements Effective {
         private @JsonBackReference Roster roster;
         private String worker;
         private LocalDate start;

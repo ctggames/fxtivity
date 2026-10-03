@@ -65,7 +65,7 @@ class ChangeEventsTest {
         c = Term.of("c", 1960, 1970);
     }
 
-    private static <E extends IEffectiveEntity> void assertMirrored(EffectiveList<E> list, Mirror<E> mirror) {
+    private static <E extends Effective> void assertMirrored(EffectiveList<E> list, Mirror<E> mirror) {
         assertThat(mirror.copy, is(list));
     }
 

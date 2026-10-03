@@ -27,14 +27,27 @@ import io.github.ctgnz.yamlflock.YamlFlowStyle;
  * <p>
  * Serialised as the list of entries alone - the owner is a back reference, restored by Jackson from the owner's side - and each entry is written as one flow-style line when
  * yaml-flock is present.
+ * <p>
+ * A property is created by its owner, in a field initialiser:
+ *
+ * <pre>
+ * private final &#64;JsonManagedReference EffectiveProperty&lt;String&gt; name = new EffectiveProperty&lt;&gt;(this);
+ * </pre>
+ *
+ * javac's {@code this-escape} lint flags that in an owner a subclass could extend, as it flags any reference to {@code this} handed out during construction. Here it is a false
+ * alarm: the constructor only stores the owner, and nothing reads the owner's period until the property is used, after construction. An owner that is not {@code final} and is
+ * compiled with the lint as an error suppresses it, with that reason:
+ *
+ * <pre>
+ * // EffectiveProperty only stores its owner while it is constructed, and reads its period later.
+ * &#64;SuppressWarnings("this-escape")
+ * </pre>
  *
  * @param <T>
  *            the type of the value
- * @param <E>
- *            the type of the owner
  * @author ctg
  */
-public class EffectiveProperty<T, E extends IEffectiveEntity> {
+public class EffectiveProperty<T> {
 
     /**
      * One change in the history: from {@link #getDate()} onwards, the value is {@link #getValue()}.
@@ -106,7 +119,7 @@ public class EffectiveProperty<T, E extends IEffectiveEntity> {
 
     }
 
-    private @JsonBackReference E owner;
+    private @JsonBackReference Effective owner;
     private @JsonValue List<Entry<T>> entries;
     private @JsonIgnore final Map<LocalDate, T> index = new TreeMap<>();
 
@@ -116,13 +129,13 @@ public class EffectiveProperty<T, E extends IEffectiveEntity> {
      * @param owner
      *            the owner, whose period bounds the history
      */
-    public EffectiveProperty(E owner) {
+    public EffectiveProperty(Effective owner) {
         this.owner = owner;
         this.entries = new ArrayList<>();
     }
 
     /**
-     * A history read back from its entries. The owner is set separately, by Jackson's back reference or by {@link #setOwner(IEffectiveEntity)}.
+     * A history read back from its entries. The owner is set separately, by Jackson's back reference or by {@link #setOwner(Effective)}.
      *
      * @param entries
      *            the entries
@@ -145,7 +158,7 @@ public class EffectiveProperty<T, E extends IEffectiveEntity> {
      * @param other
      *            the history to copy
      */
-    public void copy(EffectiveProperty<T, E> other) {
+    public void copy(EffectiveProperty<T> other) {
         clear();
         this.entries.addAll(other.entries);
         this.index.putAll(other.index);
@@ -220,7 +233,7 @@ public class EffectiveProperty<T, E extends IEffectiveEntity> {
      *
      * @return the owner
      */
-    public E getOwner() {
+    public Effective getOwner() {
         return owner;
     }
 
@@ -310,7 +323,7 @@ public class EffectiveProperty<T, E extends IEffectiveEntity> {
      * @param owner
      *            the owner
      */
-    public void setOwner(E owner) {
+    public void setOwner(Effective owner) {
         this.owner = owner;
     }
 
@@ -347,7 +360,7 @@ public class EffectiveProperty<T, E extends IEffectiveEntity> {
      * @param copyFunction
      *            how to copy the value carried across the split
      */
-    public void split(LocalDate endDate, EffectiveProperty<T, E> other, Function<T, T> copyFunction) {
+    public void split(LocalDate endDate, EffectiveProperty<T> other, Function<T, T> copyFunction) {
         other.setValue(endDate, copyFunction.apply(getEffectiveValue(endDate)));
         List<Entry<T>> postDated = entries.stream().filter(entry -> entry.getDate().isAfter(endDate) || entry.getDate().equals(endDate)).toList();
         postDated.forEach(entry -> {
@@ -357,25 +370,9 @@ public class EffectiveProperty<T, E extends IEffectiveEntity> {
     }
 
     /**
-     * The history as one element per span of time, for values that are already {@link IEffectiveEntity effective entities}.
-     * <p>
-     * {@code valueType} is not used at run time; it is there to tell the compiler what {@code W} is.
-     *
-     * @param <W>
-     *            the element type, which the values already are
-     * @param valueType
-     *            the element type
-     * @return one element per span, each carrying its span's dates; empty if the history has no changes
-     */
-    @SuppressWarnings("unchecked")
-    public <W extends IEffectiveEntity> SingleEffectiveList<W> toList(Class<W> valueType) {
-        // Through Function<?, ?> because Function.identity() infers Function<Object, Object> here, and a cast between two differently
-        // parameterised instances of the same generic type is a compile error rather than a warning.
-        return toList((Function<T, W>) (Function<?, ?>) Function.identity());
-    }
-
-    /**
      * The history as one element per span of time, each built from the value by {@code wrapperFunction}.
+     * <p>
+     * Where the values are already {@link Effective}, {@code toList(Function.identity())} gives them back, each given its span's dates.
      *
      * @param <W>
      *            the element type
@@ -383,7 +380,7 @@ public class EffectiveProperty<T, E extends IEffectiveEntity> {
      *            how to build an element from a value
      * @return one element per span, each carrying its span's dates; empty if the history has no changes
      */
-    public <W extends IEffectiveEntity> SingleEffectiveList<W> toList(Function<T, W> wrapperFunction) {
+    public <W extends Effective> SingleEffectiveList<W> toList(Function<? super T, ? extends W> wrapperFunction) {
         SingleEffectiveList<W> list = new SingleEffectiveList<>(false);
         if (entries.isEmpty()) {
             return list;

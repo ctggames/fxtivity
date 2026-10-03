@@ -13,7 +13,7 @@ import java.util.Objects;
  *            the element type
  * @author ctg
  */
-public class MultiEffectiveList<E extends IEffectiveEntity> extends EffectiveList<E> {
+public class MultiEffectiveList<E extends Effective> extends EffectiveList<E> {
 
     /** An empty list. */
     public MultiEffectiveList() {
@@ -62,8 +62,8 @@ public class MultiEffectiveList<E extends IEffectiveEntity> extends EffectiveLis
         if (sourceList.isEmpty()) {
             return DateRange.singleton(Effectivity.FOREVER);
         }
-        LocalDate minDate = sourceList.stream().map(IEffectiveEntity::getStart).min(LocalDate::compareTo).get();
-        LocalDate maxDate = sourceList.stream().map(IEffectiveEntity::getEnd).max(LocalDate::compareTo).get();
+        LocalDate minDate = sourceList.stream().map(Effective::getStart).min(LocalDate::compareTo).get();
+        LocalDate maxDate = sourceList.stream().map(Effective::getEnd).max(LocalDate::compareTo).get();
         return Effectivity.toEffectiveRange(minDate, maxDate);
     }
 

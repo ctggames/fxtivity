@@ -8,7 +8,7 @@ import java.time.LocalDate;
 import org.junit.jupiter.api.Test;
 
 /** What an entity's period answers about itself. */
-class EffectiveEntityTest {
+class EffectiveTest {
 
     private static LocalDate year(int year) {
         return LocalDate.of(year, 1, 1);

@@ -6,10 +6,10 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
+import io.github.ctgnz.fxtivity.Effective;
 import io.github.ctgnz.fxtivity.EffectiveMap;
 import io.github.ctgnz.fxtivity.EffectiveProperty;
 import io.github.ctgnz.fxtivity.Effectivity;
-import io.github.ctgnz.fxtivity.IEffectiveEntity;
 import io.github.ctgnz.fxtivity.SingleEffectiveList;
 
 /**
@@ -24,12 +24,12 @@ import io.github.ctgnz.fxtivity.SingleEffectiveList;
 @JsonPropertyOrder({
     "id", "start", "end", "name"
 })
-public final class Company implements IEffectiveEntity {
+public final class Company implements Effective {
 
     private String id;
     private LocalDate start;
     private LocalDate end = Effectivity.FOREVER;
-    private final @JsonManagedReference EffectiveProperty<String, Company> name = new EffectiveProperty<>(this);
+    private final @JsonManagedReference EffectiveProperty<String> name = new EffectiveProperty<>(this);
     private final @JsonIgnore SingleEffectiveList<Appointment> chiefExecutives = new SingleEffectiveList<>();
     private final @JsonIgnore EffectiveMap<String, Appointment> board = new EffectiveMap<>(true);
 
@@ -75,7 +75,7 @@ public final class Company implements IEffectiveEntity {
     }
 
     /** The name the company traded under over time. */
-    public EffectiveProperty<String, Company> name() {
+    public EffectiveProperty<String> name() {
         return name;
     }
 

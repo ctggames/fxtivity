@@ -14,13 +14,13 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
  *
  * @author ctg
  */
-public interface IEffectiveEntity {
+public interface Effective {
 
     /** Orders by start date, then by end date. */
-    Comparator<IEffectiveEntity> DATE_ORDER = Comparator.comparing(IEffectiveEntity::getStart).thenComparing(IEffectiveEntity::getEnd);
+    Comparator<Effective> DATE_ORDER = Comparator.comparing(Effective::getStart).thenComparing(Effective::getEnd);
 
     /** Orders by start date, latest first, then by end date. */
-    Comparator<IEffectiveEntity> REVERSE_DATE_ORDER = Comparator.comparing(IEffectiveEntity::getStart).reversed().thenComparing(IEffectiveEntity::getEnd);
+    Comparator<Effective> REVERSE_DATE_ORDER = Comparator.comparing(Effective::getStart).reversed().thenComparing(Effective::getEnd);
 
     /**
      * Whether this is in effect on {@code date}.
@@ -74,8 +74,7 @@ public interface IEffectiveEntity {
      * The period, as a snapshot.
      * <p>
      * A new {@link Effectivity} each time, holding the dates as they are now. Changing it leaves this entity as it was: an entity's dates are changed with
-     * {@link #setStart(LocalDate)} and {@link #setEnd(LocalDate)}, or - while it is in a collection - with
-     * {@link EffectiveList#reschedule(IEffectiveEntity, LocalDate, LocalDate)}.
+     * {@link #setStart(LocalDate)} and {@link #setEnd(LocalDate)}, or - while it is in a collection - with {@link EffectiveList#reschedule(Effective, LocalDate, LocalDate)}.
      *
      * @return the period
      */
@@ -107,7 +106,7 @@ public interface IEffectiveEntity {
      *            the entity to compare with
      * @return true if this comes after it
      */
-    default <E extends IEffectiveEntity> boolean isAfter(E other) {
+    default <E extends Effective> boolean isAfter(E other) {
         if (getStart().equals(other.getStart())) {
             return getEnd().isAfter(other.getEnd());
         }
@@ -123,7 +122,7 @@ public interface IEffectiveEntity {
      *            the entity to compare with
      * @return true if this comes before it
      */
-    default <E extends IEffectiveEntity> boolean isBefore(E other) {
+    default <E extends Effective> boolean isBefore(E other) {
         if (getStart().equals(other.getStart())) {
             return getEnd().isBefore(other.getEnd());
         }
@@ -183,7 +182,7 @@ public interface IEffectiveEntity {
      *            the entity to test
      * @return true if they overlap
      */
-    default boolean overlaps(IEffectiveEntity other) {
+    default boolean overlaps(Effective other) {
         return overlaps(other.getEffectiveDates());
     }
 

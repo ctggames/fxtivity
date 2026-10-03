@@ -23,13 +23,13 @@ import javafx.collections.transformation.FilteredList;
  * Suits anything that has exactly one holder at a time - the chief executive of a company, the name a person goes by. An element that would overlap another is refused, and unless
  * gaps are allowed, so is one that would leave a period with nothing in effect.
  * <p>
- * {@link #insertForwards(IEffectiveEntity)} and {@link #insertBackwards(IEffectiveEntity)} make room for a new element by adjusting its neighbours rather than refusing it.
+ * {@link #insertForwards(Effective)} and {@link #insertBackwards(Effective)} make room for a new element by adjusting its neighbours rather than refusing it.
  *
  * @param <E>
  *            the element type
  * @author ctg
  */
-public class SingleEffectiveList<E extends IEffectiveEntity> extends EffectiveList<E> {
+public class SingleEffectiveList<E extends Effective> extends EffectiveList<E> {
     public final BooleanProperty gapsAllowed = new SimpleBooleanProperty();
 
     /** An empty succession that allows no gaps. */
@@ -183,7 +183,7 @@ public class SingleEffectiveList<E extends IEffectiveEntity> extends EffectiveLi
      * @return the element, if any
      */
     public Optional<E> getLastEffective(DateRange dateRange) {
-        return sourceList.stream().sorted(IEffectiveEntity.REVERSE_DATE_ORDER).filter(element -> element.overlaps(dateRange)).findFirst();
+        return sourceList.stream().sorted(Effective.REVERSE_DATE_ORDER).filter(element -> element.overlaps(dateRange)).findFirst();
     }
 
     /**
@@ -364,7 +364,7 @@ public class SingleEffectiveList<E extends IEffectiveEntity> extends EffectiveLi
      *
      * @throws IllegalArgumentException
      *             if removing the element would leave a gap
-     * @see #remove(IEffectiveEntity, Removal)
+     * @see #remove(Effective, Removal)
      */
     @Override
     public boolean remove(Object element) {
@@ -612,7 +612,7 @@ public class SingleEffectiveList<E extends IEffectiveEntity> extends EffectiveLi
     private boolean hasGaps(Collection<? extends E> source) {
         if (source.size() > 1) {
             List<E> sorted = new ArrayList<>(source);
-            sorted.sort(IEffectiveEntity.DATE_ORDER);
+            sorted.sort(Effective.DATE_ORDER);
             Iterator<E> itr = sorted.iterator();
             E previous = itr.next();
             while (itr.hasNext()) {
