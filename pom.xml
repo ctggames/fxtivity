@@ -5,264 +5,34 @@
     <groupId>io.github.ctgnz</groupId>
     <artifactId>fxtivity</artifactId>
     <version>1.0.0-SNAPSHOT</version>
-    <packaging>jar</packaging>
+    <packaging>pom</packaging>
 
     <name>fxtivity</name>
     <description>The Effectivity pattern on JavaFX: date-bounded entities, values that change over time, and observable collections that all follow one application-wide effective date.</description>
-    <url>https://github.com/ctgnz/fxtivity</url>
 
-    <licenses>
-        <license>
-            <name>Apache License, Version 2.0</name>
-            <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
-        </license>
-    </licenses>
+    <parent>
+        <groupId>io.github.ctgnz</groupId>
+        <artifactId>fxtivity-parent</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
+        <relativePath>fxtivity-parent/pom.xml</relativePath>
+    </parent>
 
-    <developers>
-        <developer>
-            <name>Colin Sharples</name>
-            <email>ctg@ctg.co.nz</email>
-            <organization>CTG Games Limited</organization>
-            <organizationUrl>https://www.ctg.co.nz</organizationUrl>
-        </developer>
-    </developers>
+    <!--
+        An aggregator, and nothing else: it answers "what is in this repository". The build
+        configuration lives in fxtivity-parent, which every module inherits, and this pom is not
+        published (see excludeArtifacts there).
 
-    <scm>
-        <connection>scm:git:git://github.com/ctgnz/fxtivity.git</connection>
-        <developerConnection>scm:git:ssh://github.com/ctgnz/fxtivity.git</developerConnection>
-        <url>http://github.com/ctgnz/fxtivity/tree/master</url>
-    </scm>
+        It inherits fxtivity-parent too, which looks redundant for a pom with no sources and is not:
+        a plugin goal run from here - `mvn spotless:apply` being the one that matters daily - resolves
+        against this project, and fails without the parent's plugin configuration. Listing
+        fxtivity-parent as a module as well is a different relationship: this reactor builds it.
 
-    <properties>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <javafx.version>25.0.3</javafx.version>
-        <jackson.version>2.22.2</jackson.version>
-        <cucumber.version>7.34.8</cucumber.version>
-    </properties>
-
-    <dependencyManagement>
-        <dependencies>
-            <!--
-                The BOM rather than a single version property, because jackson-annotations stopped
-                tracking the patch version of the other Jackson modules at 2.20 and is versioned on its
-                own line now. The BOM knows which annotations release goes with databind 2.22.2.
-            -->
-            <dependency>
-                <groupId>com.fasterxml.jackson</groupId>
-                <artifactId>jackson-bom</artifactId>
-                <version>${jackson.version}</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.junit</groupId>
-                <artifactId>junit-bom</artifactId>
-                <version>6.1.3</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
-
-    <dependencies>
-        <!--
-            javafx-base only - beans and collections, which is everything the effective date and the
-            observable lists need. Nothing here starts a toolkit, so neither this library nor its tests
-            need a display.
-        -->
-        <dependency>
-            <groupId>org.openjfx</groupId>
-            <artifactId>javafx-base</artifactId>
-            <version>${javafx.version}</version>
-        </dependency>
-
-        <!--
-            Annotations only. The model declares how it is serialised, but nothing here serialises
-            anything, so a consumer who never writes these objects out pays for no Jackson runtime.
-        -->
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-annotations</artifactId>
-        </dependency>
-
-        <!--
-            Optional: it supplies @YamlFlowStyle, which keeps a time-varying value's history on one line
-            per change when written as YAML. A consumer writing YAML with yaml-flock already has it; one
-            writing JSON, or not serialising at all, should not inherit a YAML stack for an annotation
-            it never reads. An annotation whose class is absent at runtime is simply ignored.
-        -->
-        <dependency>
-            <groupId>io.github.ctgnz</groupId>
-            <artifactId>yaml-flock</artifactId>
-            <version>1.0.0</version>
-            <optional>true</optional>
-        </dependency>
-
-        <!-- The scenarios round-trip the harness model through YAML, so the tests need the writer. -->
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-databind</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.fasterxml.jackson.dataformat</groupId>
-            <artifactId>jackson-dataformat-yaml</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.fasterxml.jackson.datatype</groupId>
-            <artifactId>jackson-datatype-jsr310</artifactId>
-            <scope>test</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.junit.platform</groupId>
-            <artifactId>junit-platform-suite</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>io.cucumber</groupId>
-            <artifactId>cucumber-java</artifactId>
-            <version>${cucumber.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>io.cucumber</groupId>
-            <artifactId>cucumber-junit-platform-engine</artifactId>
-            <version>${cucumber.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.hamcrest</groupId>
-            <artifactId>hamcrest</artifactId>
-            <version>2.2</version>
-            <scope>test</scope>
-        </dependency>
-    </dependencies>
-
-    <build>
-        <plugins>
-            <plugin>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.11.0</version>
-                <configuration>
-                    <release>25</release>
-                    <encoding>UTF-8</encoding>
-                    <compilerArgs>
-                        <arg>-Xlint:all</arg>
-                        <arg>-Werror</arg>
-                    </compilerArgs>
-                </configuration>
-            </plugin>
-            <plugin>
-                <!-- The previous default predates the JUnit Platform entirely and cannot discover Jupiter/Cucumber tests. -->
-                <artifactId>maven-surefire-plugin</artifactId>
-                <version>3.6.0</version>
-            </plugin>
-            <plugin>
-                <groupId>com.diffplug.spotless</groupId>
-                <artifactId>spotless-maven-plugin</artifactId>
-                <version>2.44.5</version>
-                <configuration>
-                    <java>
-                        <importOrder>
-                            <file>${maven.multiModuleProjectDirectory}/config/eclipse.importorder</file>
-                        </importOrder>
-                        <removeUnusedImports/>
-                        <eclipse>
-                            <file>${maven.multiModuleProjectDirectory}/config/eclipse-formatter.xml</file>
-                        </eclipse>
-                    </java>
-                </configuration>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>check</goal>
-                        </goals>
-                        <phase>verify</phase>
-                    </execution>
-                </executions>
-            </plugin>
-        </plugins>
-    </build>
-
-    <profiles>
-        <profile>
-            <id>release</id>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-javadoc-plugin</artifactId>
-                        <version>3.11.2</version>
-                        <configuration>
-                            <!--
-                                Keep doclint checking syntax, html and references, and drop only
-                                "missing" - an unresolvable {@link} is a real error and javadoc is the
-                                only thing that finds one.
-                            -->
-                            <doclint>all,-missing</doclint>
-                        </configuration>
-                        <executions>
-                            <execution>
-                                <id>attach-javadoc</id>
-                                <goals>
-                                    <goal>jar</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-source-plugin</artifactId>
-                        <version>3.3.0</version>
-                        <executions>
-                            <execution>
-                                <id>attach-sources</id>
-                                <goals>
-                                    <goal>jar</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-gpg-plugin</artifactId>
-                        <version>3.1.0</version>
-                        <executions>
-                            <execution>
-                                <id>sign-artifacts</id>
-                                <phase>verify</phase>
-                                <goals>
-                                    <goal>sign</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-                    <plugin>
-                        <!--
-                            autoPublish false: a tag stages a validated deployment on the Portal and
-                            publishing stays a deliberate step, so a bad staging is dropped rather than
-                            superseded.
-                        -->
-                        <groupId>org.sonatype.central</groupId>
-                        <artifactId>central-publishing-maven-plugin</artifactId>
-                        <version>0.11.0</version>
-                        <extensions>true</extensions>
-                        <configuration>
-                            <publishingServerId>central</publishingServerId>
-                            <autoPublish>false</autoPublish>
-                        </configuration>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-    </profiles>
+        The same layout as jmsfx (jmsfx#102). Release a version across all of it with
+        `mvn versions:set -DnewVersion=1.0.0 -DprocessAllModules=true`.
+    -->
+    <modules>
+        <module>fxtivity-parent</module>
+        <module>fxtivity-core</module>
+    </modules>
 
 </project>

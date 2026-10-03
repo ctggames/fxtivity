@@ -36,7 +36,7 @@ jobs:
           distribution: 'temurin'
           cache: 'maven'
 
-      # The scenarios write target/cucumber/scenarios.html as they run, so running them IS building the
+      # The scenarios write fxtivity-core/target/cucumber/scenarios.html as they run, so running them IS building the
       # report. Deliberately NOT continue-on-error, unlike foxglove's dashboard: there a failure is the
       # content worth publishing, whereas here the report is documentation and a red specification is worse
       # than yesterday's green one.
@@ -45,13 +45,13 @@ jobs:
 
       - name: Assemble the site
         run: |
-          if [ ! -f target/cucumber/scenarios.html ]; then
-            echo "::error::target/cucumber/scenarios.html was not produced - has the html plugin been removed from RunCucumberTest?"
+          if [ ! -f fxtivity-core/target/cucumber/scenarios.html ]; then
+            echo "::error::fxtivity-core/target/cucumber/scenarios.html was not produced - has the html plugin been removed from RunCucumberTest?"
             exit 1
           fi
           mkdir -p target/site
-          cp src/site/index.html target/site/index.html
-          cp target/cucumber/scenarios.html target/site/scenarios.html
+          cp fxtivity-core/src/site/index.html target/site/index.html
+          cp fxtivity-core/target/cucumber/scenarios.html target/site/scenarios.html
           echo "Site assembled:"
           ls -l target/site
 
