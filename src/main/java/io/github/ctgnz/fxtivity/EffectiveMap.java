@@ -1,9 +1,11 @@
 package io.github.ctgnz.fxtivity;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.NavigableMap;
@@ -41,8 +43,7 @@ public class EffectiveMap<K extends Comparable<K>, E extends IEffectiveEntity> {
     public final BooleanProperty gapsAllowed = new SimpleBooleanProperty();
     // Every history handed out, including any that are empty - so an editor holding one keeps writing to the map after removing its last record.
     private final NavigableMap<K, SingleEffectiveList<E>> histories;
-    private final AllRecords<E> effectiveRecords = new AllRecords<>();
-    private final ListChangeListener<E> relay = effectiveRecords::relay;
+    private final AllRecords<K, E> effectiveRecords;
 
     /** An empty map, with keys in natural order and no gaps allowed. */
     public EffectiveMap() {
@@ -58,6 +59,7 @@ public class EffectiveMap<K extends Comparable<K>, E extends IEffectiveEntity> {
     public EffectiveMap(boolean gapsAllowed) {
         this.gapsAllowed.set(gapsAllowed);
         this.histories = new TreeMap<>();
+        this.effectiveRecords = new AllRecords<>(new IdentityHashMap<>(), Comparator.<K> naturalOrder());
     }
 
     /**
@@ -71,6 +73,7 @@ public class EffectiveMap<K extends Comparable<K>, E extends IEffectiveEntity> {
     public EffectiveMap(boolean gapsAllowed, Comparator<K> keyComparator) {
         this.gapsAllowed.set(gapsAllowed);
         this.histories = new TreeMap<>(keyComparator);
+        this.effectiveRecords = new AllRecords<>(new IdentityHashMap<>(), keyComparator);
     }
 
     /**
@@ -117,7 +120,7 @@ public class EffectiveMap<K extends Comparable<K>, E extends IEffectiveEntity> {
     }
 
     /**
-     * Every record across all keys, as one list that allows overlaps.
+     * Every record across all keys, as one list that allows overlaps, in date order and then key order.
      * <p>
      * Read-only, and live: it follows every change to the keys' histories. Changes are made through {@link #put(Comparable, IEffectiveEntity)},
      * {@link #remove(Comparable, IEffectiveEntity)}, or a key's history.
@@ -142,7 +145,7 @@ public class EffectiveMap<K extends Comparable<K>, E extends IEffectiveEntity> {
         return histories.computeIfAbsent(key, k -> {
             SingleEffectiveList<E> history = new SingleEffectiveList<>(isGapsAllowed());
             history.gapsAllowed.bind(gapsAllowed);
-            history.addListener(relay);
+            history.addListener((ListChangeListener<E>) change -> effectiveRecords.relay(key, change));
             return history;
         });
     }
@@ -210,7 +213,8 @@ public class EffectiveMap<K extends Comparable<K>, E extends IEffectiveEntity> {
      */
     public void load(Map<K, ? extends Collection<? extends E>> loaded) {
         loaded.forEach((key, records) -> {
-            String breach = getRecords(key).breach(EffectiveList.byDate(records));
+            SingleEffectiveList<E> history = getRecords(key);
+            String breach = history.breach(history.byDate(records));
             if (breach != null) {
                 throw new IllegalArgumentException(key + ": " + breach);
             }
@@ -312,16 +316,27 @@ public class EffectiveMap<K extends Comparable<K>, E extends IEffectiveEntity> {
         return histories.values().stream().flatMap(Collection::stream).toList();
     }
 
-    /** Every record across all keys: derived from the keys' histories, so it refuses every change made to it directly. */
-    private static final class AllRecords<E extends IEffectiveEntity> extends MultiEffectiveList<E> {
+    /**
+     * Every record across all keys: derived from the keys' histories, so it refuses every change made to it directly. Records with the same dates are in key order - one key's
+     * history cannot hold two.
+     */
+    private static final class AllRecords<K, E extends IEffectiveEntity> extends MultiEffectiveList<E> {
+        private final Map<E, K> keys;
+
+        AllRecords(Map<E, K> keys, Comparator<? super K> keyOrder) {
+            super(new ArrayList<>(), Comparator.comparing(keys::get, keyOrder));
+            this.keys = keys;
+        }
 
         // Repeats a change to one key's history. Calls the base class's add and remove directly, which the overrides below refuse.
-        void relay(ListChangeListener.Change<? extends E> change) {
+        void relay(K key, ListChangeListener.Change<? extends E> change) {
             while (change.next()) {
                 for (E removed : change.getRemoved()) {
                     super.remove(indexOf(removed));
+                    keys.remove(removed);
                 }
                 for (E added : change.getAddedSubList()) {
+                    keys.put(added, key);
                     super.add(0, added);
                 }
             }
