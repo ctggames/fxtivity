@@ -1,10 +1,14 @@
 package io.github.ctgnz.fxtivity.cucumber;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.nullValue;
 
 import java.time.LocalDate;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -26,8 +30,10 @@ import io.github.ctgnz.fxtivity.Effectivity;
 import io.github.ctgnz.fxtivity.SingleEffectiveList;
 import io.github.ctgnz.fxtivity.employment.Appointment;
 import io.github.ctgnz.fxtivity.employment.Company;
+import io.github.ctgnz.fxtivity.employment.Department;
 import io.github.ctgnz.fxtivity.employment.Employment;
 import io.github.ctgnz.fxtivity.employment.Person;
+import io.github.ctgnz.fxtivity.employment.Register;
 import io.github.ctgnz.yamlflock.FlockYamlFactory;
 
 /**
@@ -42,8 +48,10 @@ public class EffectivitySteps {
     private static final LocalDate DEFAULT_EFFECTIVE_DATE = LocalDate.of(2000, 6, 1);
     private static final LocalDate ACTIVE_START = LocalDate.of(1900, 1, 1);
 
-    private final Map<String, Person> people = new HashMap<>();
-    private final Map<String, Company> companies = new HashMap<>();
+    // In the order the scenario introduces them, so the register is written in that order.
+    private final Map<String, Person> people = new LinkedHashMap<>();
+    private final Map<String, Company> companies = new LinkedHashMap<>();
+    private final Map<String, Department> departments = new HashMap<>();
     private final Map<String, Employment> employments = new HashMap<>();
 
     private Effectivity period;
@@ -325,6 +333,126 @@ public class EffectivitySteps {
         assertThat(rows(spans.stream().map(span -> List.of(span.getDelegate(), span.getStart().toString(), span.getEnd().toString())).toList()), is(rows(table.asLists().subList(1, table.height()))));
     }
 
+    // ---------------------------------------------------------------------------------------------------- departments
+
+    @Given("{name} opened a(n) {word} department on {date}")
+    public void openedADepartment(String company, String department, LocalDate opened) {
+        departments.put(department, companies.get(company).openDepartment(department, opened).orElseThrow());
+    }
+
+    @When("{name} opens a(n) {word} department on {date}")
+    public void opensADepartment(String company, String department, LocalDate opened) {
+        outcome = companies.get(company).openDepartment(department, opened).isPresent();
+    }
+
+    @Then("the opening is refused")
+    public void theOpeningIsRefused() {
+        assertThat(outcome, is(false));
+    }
+
+    @Given("the {word} department closed on {date}")
+    @When("the {word} department closes on {date}")
+    public void theDepartmentCloses(String department, LocalDate date) {
+        assertThat(departments.get(department).close(date), is(true));
+    }
+
+    @Given("{name} was managed by the {word} department from {date}")
+    public void wasManagedByTheDepartment(String person, String department, LocalDate from) {
+        assertThat(people.get(person).moveTo(departments.get(department), from), is(true));
+    }
+
+    @Given("{name} was managed by {name} directly from {date}")
+    public void wasManagedDirectly(String person, String company, LocalDate from) {
+        assertThat(people.get(person).moveTo(null, from), is(true));
+    }
+
+    @When("{name} is transferred to the {word} department on {date}")
+    public void isTransferred(String person, String department, LocalDate from) {
+        outcome = people.get(person).moveTo(departments.get(department), from);
+    }
+
+    @Then("the transfer is refused")
+    public void theTransferIsRefused() {
+        assertThat(outcome, is(false));
+    }
+
+    @Then("{name} was managed by the {word} department on {date}")
+    public void wasManagedByTheDepartmentOn(String person, String department, LocalDate date) {
+        assertThat(people.get(person).managedBy(date), is(departments.get(department)));
+    }
+
+    @Then("{name} was managed by {name} directly on {date}")
+    public void wasManagedDirectlyOn(String person, String company, LocalDate date) {
+        assertThat(people.get(person).managedBy(date), is(nullValue()));
+    }
+
+    @Then("the {word} department managed {string} on {date}")
+    public void theDepartmentManaged(String department, String expected, LocalDate date) {
+        assertThat(departments.get(department).managedOn(date).stream().map(Person::getId).collect(Collectors.joining(", ")), is(expected));
+    }
+
+    @Then("the {word} department managed nobody on {date}")
+    public void theDepartmentManagedNobody(String department, LocalDate date) {
+        assertThat(departments.get(department).managedOn(date), is(empty()));
+    }
+
+    @Given("{name} was assigned to the {word} department from {date} to {date}")
+    public void wasAssigned(String person, String department, LocalDate from, LocalDate to) {
+        assertThat(people.get(person).assignTo(departments.get(department), from, to), is(notNullValue()));
+    }
+
+    @Given("{name} was assigned to the {word} department from {date}")
+    public void wasAssignedUntilFurtherNotice(String person, String department, LocalDate from) {
+        wasAssigned(person, department, from, Effectivity.FOREVER);
+    }
+
+    @When("{name} is assigned to the {word} department from {date} to {date}")
+    public void isAssigned(String person, String department, LocalDate from, LocalDate to) {
+        outcome = people.get(person).assignTo(departments.get(department), from, to) != null;
+    }
+
+    @Then("the assignment is refused")
+    public void theAssignmentIsRefused() {
+        assertThat(outcome, is(false));
+    }
+
+    @Then("{name} was assigned to {string} on {date}")
+    public void wasAssignedOn(String person, String expected, LocalDate date) {
+        assertThat(assignedOn(person, date), is(expected));
+    }
+
+    @Then("{name} was assigned to nothing on {date}")
+    public void wasAssignedToNothingOn(String person, LocalDate date) {
+        assertThat(assignedOn(person, date), is(""));
+    }
+
+    @Then("the {word} department had {string} assigned on {date}")
+    public void theDepartmentHadAssigned(String department, String expected, LocalDate date) {
+        assertThat(departments.get(department).assigned().stream().filter(assignment -> assignment.containsDate(date)).map(assignment -> assignment.person().getId()).collect(Collectors.joining(", ")),
+            is(expected));
+    }
+
+    // ---------------------------------------------------------------------------------------------------- the register
+
+    @When("the register is written as YAML")
+    public void theRegisterIsWritten() throws Exception {
+        written = mapper().writeValueAsString(new Register(List.copyOf(companies.values()), List.copyOf(people.values())));
+    }
+
+    @When("the register is written as YAML and read back")
+    public void theRegisterIsWrittenAndReadBack() throws Exception {
+        theRegisterIsWritten();
+        Register register = mapper().readValue(written, Register.class);
+        companies.clear();
+        people.clear();
+        departments.clear();
+        register.companies().forEach(company -> {
+            companies.put(company.getId(), company);
+            company.departments().forEach(department -> departments.put(department.getId(), department));
+        });
+        register.people().forEach(person -> people.put(person.getId(), person));
+    }
+
     // ---------------------------------------------------------------------------------------------------- writing and reading
 
     @When("{name} is written as YAML")
@@ -357,6 +485,10 @@ public class EffectivitySteps {
     private String nameOf(String owner, LocalDate date) {
         Person person = people.get(owner);
         return person != null ? person.name().getEffectiveValue(date) : companies.get(owner).name().getEffectiveValue(date);
+    }
+
+    private String assignedOn(String person, LocalDate date) {
+        return people.get(person).assignments().stream().filter(assignment -> assignment.containsDate(date)).map(assignment -> assignment.department().getId()).collect(Collectors.joining(", "));
     }
 
     private static String names(List<Company> list) {

@@ -1,15 +1,21 @@
 package io.github.ctgnz.fxtivity.employment;
 
 import java.time.LocalDate;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Optional;
 
+import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import com.fasterxml.jackson.annotation.JsonSetter;
 
 import io.github.ctgnz.fxtivity.Effective;
 import io.github.ctgnz.fxtivity.EffectiveMap;
 import io.github.ctgnz.fxtivity.EffectiveProperty;
 import io.github.ctgnz.fxtivity.Effectivity;
+import io.github.ctgnz.fxtivity.MultiEffectiveList;
 import io.github.ctgnz.fxtivity.SingleEffectiveList;
 
 /**
@@ -22,7 +28,7 @@ import io.github.ctgnz.fxtivity.SingleEffectiveList;
  * in any class a subclass could extend.
  */
 @JsonPropertyOrder({
-    "id", "start", "end", "name"
+    "id", "start", "end", "name", "departments"
 })
 public final class Company implements Effective {
 
@@ -30,6 +36,7 @@ public final class Company implements Effective {
     private LocalDate start;
     private LocalDate end = Effectivity.FOREVER;
     private final @JsonManagedReference EffectiveProperty<String> name = new EffectiveProperty<>(this);
+    private final MultiEffectiveList<Department> departments = new MultiEffectiveList<>(Comparator.comparing(Department::getId));
     private final @JsonIgnore SingleEffectiveList<Appointment> chiefExecutives = new SingleEffectiveList<>();
     private final @JsonIgnore EffectiveMap<String, Appointment> board = new EffectiveMap<>(true);
 
@@ -53,6 +60,30 @@ public final class Company implements Effective {
     /** The company's board: for each seat, who held it and when. */
     public EffectiveMap<String, Appointment> board() {
         return board;
+    }
+
+    /** The company's departments over time - several at once - read-only: they are opened through the company and closed through themselves. */
+    public List<Department> departments() {
+        return departments.getSourceList();
+    }
+
+    /** The department with {@code id}, if the company has had one. */
+    public Optional<Department> department(String id) {
+        return departments.stream().filter(department -> department.getId().equals(id)).findFirst();
+    }
+
+    /**
+     * Opens a department called {@code id} on {@code opened}.
+     *
+     * @return the department, or empty if the company was not in existence that day
+     */
+    public Optional<Department> openDepartment(String id, LocalDate opened) {
+        if (!containsDate(opened)) {
+            return Optional.empty();
+        }
+        Department department = new Department(this, id, opened);
+        departments.add(department);
+        return Optional.of(department);
     }
 
     /** The company's chief executives, one at a time. */
@@ -92,6 +123,18 @@ public final class Company implements Effective {
     @Override
     public String toString() {
         return id;
+    }
+
+    @JsonManagedReference("departments")
+    @JsonGetter("departments")
+    List<Department> getDepartments() {
+        return departments.getSourceList();
+    }
+
+    @JsonManagedReference("departments")
+    @JsonSetter("departments")
+    void setDepartments(List<Department> loaded) {
+        departments.load(loaded);
     }
 
 }
