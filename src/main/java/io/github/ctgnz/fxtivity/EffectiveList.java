@@ -5,6 +5,7 @@ import static io.github.ctgnz.fxtivity.IEffectiveEntity.DATE_ORDER;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
@@ -39,6 +40,8 @@ public abstract class EffectiveList<E extends IEffectiveEntity> extends Modifiab
     // Re-filters whenever the effective date moves. Held in a field because it is registered weakly: the list keeps it alive for exactly
     // as long as the list itself lives, so a discarded list stops listening rather than being pinned by the date forever.
     private final ChangeListener<LocalDate> effectiveDateListener = (obs, oldValue, newValue) -> updateFilter();
+    // Date order, then the tie-break if there is one.
+    private final Comparator<E> order;
 
     /** An empty list. */
     public EffectiveList() {
@@ -51,12 +54,26 @@ public abstract class EffectiveList<E extends IEffectiveEntity> extends Modifiab
      * @param source
      *            the initial elements
      */
+    public EffectiveList(List<E> source) {
+        this(source, null);
+    }
+
+    /**
+     * A list holding {@code source}'s elements, in date order and then {@code tieBreak}'s.
+     *
+     * @param source
+     *            the initial elements
+     * @param tieBreak
+     *            the order of elements with the same dates, or null to keep them in the order they were added
+     */
     // The FilteredList evaluates isActive on construction, before a subclass has finished initialising, so an override reading the
     // subclass's own fields would see them unset. Safe while no subclass overrides isActive, which none does.
     @SuppressWarnings("this-escape")
-    public EffectiveList(List<E> source) {
+    protected EffectiveList(List<E> source, Comparator<? super E> tieBreak) {
+        Comparator<E> dates = DATE_ORDER::compare;
+        this.order = tieBreak == null ? dates : dates.thenComparing(tieBreak);
         this.sourceList = FXCollections.observableArrayList(source);
-        sourceList.sort(DATE_ORDER);
+        sourceList.sort(order);
         this.readOnlySource = FXCollections.unmodifiableObservableList(sourceList);
         this.filtered = sourceList.filtered(this::isActive);
         Effectivity.effectiveDateProperty().addListener(new WeakChangeListener<>(effectiveDateListener));
@@ -337,9 +354,10 @@ public abstract class EffectiveList<E extends IEffectiveEntity> extends Modifiab
         return null;
     }
 
-    static <E extends IEffectiveEntity> List<E> byDate(Collection<? extends E> collection) {
+    // The elements in this list's order: by date, then by the tie-break.
+    List<E> byDate(Collection<? extends E> collection) {
         List<E> sorted = new ArrayList<>(collection);
-        sorted.sort(DATE_ORDER);
+        sorted.sort(order);
         return sorted;
     }
 
@@ -353,10 +371,10 @@ public abstract class EffectiveList<E extends IEffectiveEntity> extends Modifiab
         return false;
     }
 
-    // Where element belongs by date: after every element that sorts before or alongside it, so equal elements keep the order they were added in.
+    // Where element belongs by date and tie-break: after every element that sorts before or alongside it, so equal elements keep the order they were added in.
     private int indexByDate(E element) {
         int index = sourceList.size();
-        while (index > 0 && DATE_ORDER.compare(sourceList.get(index - 1), element) > 0) {
+        while (index > 0 && order.compare(sourceList.get(index - 1), element) > 0) {
             index--;
         }
         return index;

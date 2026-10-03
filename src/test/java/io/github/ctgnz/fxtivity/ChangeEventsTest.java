@@ -179,6 +179,23 @@ class ChangeEventsTest {
         }
     }
 
+    /** Elements with the same dates go in by the tie-break, wherever that puts them, and are announced there. */
+    @Test
+    void testTieBreak() {
+        MultiEffectiveList<Term> list = new MultiEffectiveList<>(Comparator.comparing(Term::id).reversed());
+        Mirror<Term> mirror = new Mirror<>(list);
+        Term x = Term.of("x", 1940, 1950);
+        Term y = Term.of("y", 1940, 1950);
+        Term z = Term.of("z", 1940, 1950);
+        list.add(x);
+        list.add(z);
+        list.add(y);
+        assertThat(list, contains(z, y, x));
+        assertMirrored(list, mirror);
+        list.setAll(x, y, z);
+        assertMirrored(list, mirror);
+    }
+
     /** The full list, the read-only source and the effective view each tell their own listeners the same story. */
     @Test
     void testEveryViewAgrees() {
