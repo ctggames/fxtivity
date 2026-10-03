@@ -68,8 +68,11 @@ class ControlsTest {
             assertThat(pane.view.getItems().stream().map(entry -> pane.displayFunction.apply(entry.getValue())).toList(), contains("JUNIOR"));
 
             rank.setValue(LocalDate.of(1950, 1, 1), "Senior");
-            pane.refresh();
+            rank.setValue(LocalDate.of(1945, 1, 1), "Middle");
+            assertThat("follows the property, in date order", pane.view.getItems().stream().map(entry -> entry.getValue()).toList(), contains("Junior", "Middle", "Senior"));
+            rank.remove(LocalDate.of(1945, 1, 1));
             assertThat(pane.view.getItems().stream().map(entry -> entry.getValue()).toList(), contains("Junior", "Senior"));
+            assertThrows(UnsupportedOperationException.class, () -> pane.view.getItems().clear());
 
             pane.setProperty(null);
             assertThat(pane.view.getItems(), is(empty()));

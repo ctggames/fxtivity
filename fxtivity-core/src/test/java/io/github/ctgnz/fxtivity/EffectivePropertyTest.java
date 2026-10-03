@@ -5,13 +5,19 @@ import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Function;
+
+import javafx.collections.ListChangeListener;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import io.github.ctgnz.fxtivity.EffectiveProperty.Entry;
 import io.github.ctgnz.fxtivity.consumer.ExtensibleOwner;
 
 /** A value changing during its owner's lifetime: bounded by the owner's period, and read back as one span per value. */
@@ -82,6 +88,24 @@ class EffectivePropertyTest {
         candidate.setValue(LocalDate.of(1970, 1, 1), "Junior");
         candidate.clear();
         assertThat(candidate.toWrappedList(), hasSize(0));
+    }
+
+    /** The entries are live and read-only: a list view can show them directly, and a change made through the property is announced there, in its place by date. */
+    @Test
+    void testTheEntriesAreLiveAndReadOnly() {
+        candidate.setValue(LocalDate.of(1970, 1, 1), "Junior");
+        candidate.setValue(LocalDate.of(1979, 1, 1), "Principal");
+        List<String> announced = new ArrayList<>();
+        candidate.getEntries().addListener((ListChangeListener<Entry<String>>) change -> {
+            while (change.next()) {
+                assertThat("one entry added in its place, not a re-sort", change.wasPermutated(), is(false));
+                change.getAddedSubList().forEach(entry -> announced.add(change.getFrom() + ":" + entry.getValue()));
+            }
+        });
+        candidate.setValue(LocalDate.of(1975, 1, 1), "Senior");
+        assertThat(announced, contains("1:Senior"));
+        assertThat(candidate.getEntries().stream().map(Entry::getValue).toList(), contains("Junior", "Senior", "Principal"));
+        assertThrows(UnsupportedOperationException.class, () -> candidate.getEntries().clear());
     }
 
     /** A value can only be set within the owner's period. */

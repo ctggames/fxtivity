@@ -14,8 +14,8 @@ import io.github.ctgnz.fxtivity.EffectiveProperty.Entry;
 /**
  * A starting point for an editor of an {@link EffectiveProperty}: the property's changes, one per row, each as its date and its value.
  * <p>
- * It shows the changes; editing them is left to the application building on it, which knows what the values are and how they should be entered. The list is the changes as they
- * were when the property was set - an {@code EffectiveProperty} is not observable - so after changing the property, call {@link #refresh()}.
+ * It shows the changes, and follows them as the property changes; editing them is left to the application building on it, which knows what the values are and how they should be
+ * entered.
  *
  * @param <T>
  *            the type of the property's value
@@ -73,11 +73,6 @@ public class EffectivePropertyPane<T> extends VBox {
         return property;
     }
 
-    /** Shows the property's changes as they are now, after it has been changed. */
-    public void refresh() {
-        view.setItems(property == null ? FXCollections.observableArrayList() : FXCollections.observableArrayList(property.getEntries()));
-    }
-
     /**
      * Shows {@code property}'s changes.
      *
@@ -86,7 +81,7 @@ public class EffectivePropertyPane<T> extends VBox {
      */
     public void setProperty(EffectiveProperty<T> property) {
         this.property = property;
-        refresh();
+        view.setItems(property == null ? FXCollections.observableArrayList() : property.getEntries());
     }
 
 }

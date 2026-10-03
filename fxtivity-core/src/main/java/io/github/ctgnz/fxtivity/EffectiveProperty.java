@@ -1,7 +1,6 @@
 package io.github.ctgnz.fxtivity;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
@@ -10,6 +9,9 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.TreeMap;
 import java.util.function.Function;
+
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -120,7 +122,9 @@ public class EffectiveProperty<T> {
     }
 
     private @JsonBackReference Effective owner;
-    private @JsonValue List<Entry<T>> entries;
+    private final @JsonValue ObservableList<Entry<T>> entries;
+    // The one read-only view of the entries handed out, so every caller - a list view among them - sees the same live instance.
+    private final @JsonIgnore ObservableList<Entry<T>> readOnlyEntries;
     private @JsonIgnore final Map<LocalDate, T> index = new TreeMap<>();
 
     /**
@@ -131,7 +135,8 @@ public class EffectiveProperty<T> {
      */
     public EffectiveProperty(Effective owner) {
         this.owner = owner;
-        this.entries = new ArrayList<>();
+        this.entries = FXCollections.observableArrayList();
+        this.readOnlyEntries = FXCollections.unmodifiableObservableList(entries);
     }
 
     /**
@@ -142,7 +147,8 @@ public class EffectiveProperty<T> {
      */
     @JsonCreator
     public EffectiveProperty(List<Entry<T>> entries) {
-        this.entries = entries;
+        this.entries = FXCollections.observableArrayList(entries);
+        this.readOnlyEntries = FXCollections.unmodifiableObservableList(this.entries);
         entries.forEach(entry -> index.put(entry.getDate(), entry.getValue()));
     }
 
@@ -190,13 +196,16 @@ public class EffectiveProperty<T> {
     }
 
     /**
-     * The history, as serialised.
+     * The history, as serialised: read-only, and live.
+     * <p>
+     * Observable, so a list view can show it directly and follow every change. Changes are made with {@link #setValue(LocalDate, Object)} and {@link #remove(LocalDate)}, which
+     * keep the history's index of dates in step with it.
      *
      * @return the entries, in date order
      */
     @JsonValue
-    public List<Entry<T>> getEntries() {
-        return entries;
+    public ObservableList<Entry<T>> getEntries() {
+        return readOnlyEntries;
     }
 
     /**
@@ -343,8 +352,9 @@ public class EffectiveProperty<T> {
                 entries.removeIf(val -> val.date.equals(onDate));
             }
             this.index.put(onDate, value);
-            entries.add(new Entry<>(onDate, value));
-            entries.sort(Comparator.comparing(Entry::getDate));
+            // In its place by date, so a list view is told of one entry added there, not of a re-sort.
+            int position = (int) entries.stream().filter(entry -> entry.getDate().isBefore(onDate)).count();
+            entries.add(position, new Entry<>(onDate, value));
             return true;
         }
         return false;
