@@ -263,8 +263,25 @@ public class EffectiveMap<K extends Comparable<K>, E extends IEffectiveEntity> {
      * @return true if the map changed
      */
     public boolean remove(K key, E value) {
+        return remove(key, value, Removal.Refused);
+    }
+
+    /**
+     * Removes {@code value} from {@code key}'s history, doing as {@code removal} says about any gap that leaves.
+     *
+     * @param key
+     *            the key
+     * @param value
+     *            the record
+     * @param removal
+     *            what to do about the gap, if the record was between two others in a history that allows none
+     * @return true if the map changed
+     * @throws IllegalArgumentException
+     *             if the removal would leave a gap and is {@linkplain Removal#Refused refused}
+     */
+    public boolean remove(K key, E value, Removal removal) {
         SingleEffectiveList<E> history = histories.get(key);
-        return history != null && history.remove(value);
+        return history != null && history.remove(value, removal);
     }
 
     /**

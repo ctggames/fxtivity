@@ -3,6 +3,7 @@ package io.github.ctgnz.fxtivity;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -99,7 +100,7 @@ class ChangeEventsTest {
 
     @Test
     void testRemoveAtIndex() {
-        SingleEffectiveList<Term> list = new SingleEffectiveList<>(List.of(a, b, c));
+        SingleEffectiveList<Term> list = new SingleEffectiveList<>(List.of(a, b, c), true);
         Mirror<Term> mirror = new Mirror<>(list);
         list.remove(1);
         assertThat(list, contains(a, c));
@@ -160,6 +161,22 @@ class ChangeEventsTest {
         assertThat(list, contains(c, a, b));
         assertMirrored(list, mirror);
         assertThat(effective.copy, contains(c, b));
+    }
+
+    /** Removing b closes its gap by moving a neighbour: one change, which the list's listeners and the effective view follow. */
+    @Test
+    void testRemovalClosingAGap() {
+        for (Removal removal : List.of(Removal.ExtendsPrevious, Removal.StartsNextEarlier)) {
+            init();
+            SingleEffectiveList<Term> list = new SingleEffectiveList<>(List.of(a, b, c));
+            Mirror<Term> mirror = new Mirror<>(list);
+            Mirror<Term> effective = new Mirror<>(list.effective());
+            Effectivity.forDate(LocalDate.of(1955, 1, 1));
+            list.removeAll(List.of(b), removal);
+            assertMirrored(list, mirror);
+            assertThat(effective.copy, is(list.effective()));
+            assertThat(effective.copy, hasSize(1));
+        }
     }
 
     /** The full list, the read-only source and the effective view each tell their own listeners the same story. */

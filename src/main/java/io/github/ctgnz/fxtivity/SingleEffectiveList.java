@@ -8,6 +8,10 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
+import java.util.function.Predicate;
 
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -321,6 +325,222 @@ public class SingleEffectiveList<E extends IEffectiveEntity> extends EffectiveLi
     @Override
     public boolean isOverlapsAllowed() {
         return false;
+    }
+
+    /**
+     * Removes the element at {@code index}, refusing to leave a gap while gaps are not allowed.
+     *
+     * @throws IllegalArgumentException
+     *             if removing the element would leave a gap
+     * @see #remove(int, Removal)
+     */
+    @Override
+    public E remove(int index) {
+        return remove(index, Removal.Refused);
+    }
+
+    /**
+     * Removes the element at {@code index}, doing as {@code removal} says about any gap that leaves.
+     * <p>
+     * A gap is left only by removing an element from between two others while gaps are not allowed. Removing the first or last element, or any element while gaps are allowed,
+     * leaves none, and {@code removal} is not consulted.
+     *
+     * @param index
+     *            the element's position
+     * @param removal
+     *            what to do about the gap
+     * @return the element removed
+     * @throws IllegalArgumentException
+     *             if the removal would leave a gap and is {@linkplain Removal#Refused refused}
+     */
+    public E remove(int index, Removal removal) {
+        E element = get(index);
+        removeIndices(new TreeSet<>(Set.of(index)), removal);
+        return element;
+    }
+
+    /**
+     * Removes {@code element}, refusing to leave a gap while gaps are not allowed.
+     *
+     * @throws IllegalArgumentException
+     *             if removing the element would leave a gap
+     * @see #remove(IEffectiveEntity, Removal)
+     */
+    @Override
+    public boolean remove(Object element) {
+        int index = indexOf(element);
+        return index >= 0 && removeIndices(new TreeSet<>(Set.of(index)), Removal.Refused);
+    }
+
+    /**
+     * Removes {@code element}, doing as {@code removal} says about any gap that leaves.
+     *
+     * @param element
+     *            the element
+     * @param removal
+     *            what to do about the gap
+     * @return true if the element was in the list
+     * @throws IllegalArgumentException
+     *             if the removal would leave a gap and is {@linkplain Removal#Refused refused}
+     * @see #remove(int, Removal)
+     */
+    public boolean remove(E element, Removal removal) {
+        int index = indexOf(element);
+        return index >= 0 && removeIndices(new TreeSet<>(Set.of(index)), removal);
+    }
+
+    /**
+     * Removes every element in {@code collection} at once, refusing to leave a gap while gaps are not allowed.
+     *
+     * @throws IllegalArgumentException
+     *             if removing the elements would leave a gap
+     * @see #removeAll(Collection, Removal)
+     */
+    @Override
+    public boolean removeAll(Collection<?> collection) {
+        return removeAll(collection, Removal.Refused);
+    }
+
+    /**
+     * Removes every element in {@code collection} at once, doing as {@code removal} says about any gap that leaves.
+     * <p>
+     * The removal is judged as a whole: removing a run of elements from either end leaves no gap, and a run from the middle leaves one.
+     *
+     * @param collection
+     *            the elements to remove
+     * @param removal
+     *            what to do about each gap
+     * @return true if the list changed
+     * @throws IllegalArgumentException
+     *             if the removal would leave a gap and is {@linkplain Removal#Refused refused}
+     * @see #remove(int, Removal)
+     */
+    public boolean removeAll(Collection<?> collection, Removal removal) {
+        return removeIndices(indicesWhere(collection::contains), removal);
+    }
+
+    /**
+     * Keeps only the elements in {@code collection}, refusing to leave a gap while gaps are not allowed.
+     *
+     * @throws IllegalArgumentException
+     *             if removing the others would leave a gap
+     * @see #retainAll(Collection, Removal)
+     */
+    @Override
+    public boolean retainAll(Collection<?> collection) {
+        return retainAll(collection, Removal.Refused);
+    }
+
+    /**
+     * Keeps only the elements in {@code collection}, removing the others at once and doing as {@code removal} says about any gap that leaves.
+     *
+     * @param collection
+     *            the elements to keep
+     * @param removal
+     *            what to do about each gap
+     * @return true if the list changed
+     * @throws IllegalArgumentException
+     *             if the removal would leave a gap and is {@linkplain Removal#Refused refused}
+     * @see #removeAll(Collection, Removal)
+     */
+    public boolean retainAll(Collection<?> collection, Removal removal) {
+        return removeIndices(indicesWhere(element -> !collection.contains(element)), removal);
+    }
+
+    /**
+     * Removes every element {@code filter} accepts at once, refusing to leave a gap while gaps are not allowed.
+     *
+     * @throws IllegalArgumentException
+     *             if removing the elements would leave a gap
+     * @see #removeIf(Predicate, Removal)
+     */
+    @Override
+    public boolean removeIf(Predicate<? super E> filter) {
+        return removeIf(filter, Removal.Refused);
+    }
+
+    /**
+     * Removes every element {@code filter} accepts at once, doing as {@code removal} says about any gap that leaves.
+     *
+     * @param filter
+     *            which elements to remove
+     * @param removal
+     *            what to do about each gap
+     * @return true if the list changed
+     * @throws IllegalArgumentException
+     *             if the removal would leave a gap and is {@linkplain Removal#Refused refused}
+     * @see #removeAll(Collection, Removal)
+     */
+    public boolean removeIf(Predicate<? super E> filter, Removal removal) {
+        return removeIndices(indicesWhere(filter), removal);
+    }
+
+    // Behind clear() and a sub-list's clear(), neither of which can be told what to do about a gap: they refuse to leave one.
+    @Override
+    protected void removeRange(int fromIndex, int toIndex) {
+        SortedSet<Integer> indices = new TreeSet<>();
+        for (int i = fromIndex; i < toIndex; i++) {
+            indices.add(i);
+        }
+        removeIndices(indices, Removal.Refused);
+    }
+
+    /** A gap a removal would leave, between two elements that remain. */
+    record Gap<E>(E previous, E next) {
+    }
+
+    // Removes the elements at indices as one change, unchecked. The base class removes one at a time, so this is the only place that does.
+    void removeAt(SortedSet<Integer> indices) {
+        beginChange();
+        try {
+            for (int index : indices.reversed()) {
+                super.remove(index);
+            }
+        } finally {
+            endChange();
+        }
+    }
+
+    private SortedSet<Integer> indicesWhere(Predicate<? super E> filter) {
+        SortedSet<Integer> indices = new TreeSet<>();
+        for (int i = 0; i < size(); i++) {
+            if (filter.test(get(i))) {
+                indices.add(i);
+            }
+        }
+        return indices;
+    }
+
+    // Judges the whole removal before anything changes: removed one at a time, the end of a run of elements would look like the middle of the list.
+    private boolean removeIndices(SortedSet<Integer> indices, Removal removal) {
+        if (indices.isEmpty()) {
+            return false;
+        }
+        List<Gap<E>> gaps = new ArrayList<>();
+        if (!isGapsAllowed()) {
+            E previous = null;
+            boolean removedSince = false;
+            for (int i = 0; i < size(); i++) {
+                if (indices.contains(i)) {
+                    removedSince = true;
+                    continue;
+                }
+                E next = get(i);
+                if (removedSince && previous != null && hasGap(previous, next)) {
+                    gaps.add(new Gap<>(previous, next));
+                }
+                previous = next;
+                removedSince = false;
+            }
+        }
+        // One change for the removal and any neighbour moved to close a gap.
+        beginChange();
+        try {
+            removal.remove(this, indices, gaps);
+        } finally {
+            endChange();
+        }
+        return true;
     }
 
     /**
