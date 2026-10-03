@@ -75,6 +75,11 @@
                 <version>${javafx.version}</version>
             </dependency>
             <dependency>
+                <groupId>org.openjfx</groupId>
+                <artifactId>javafx-controls</artifactId>
+                <version>${javafx.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>io.github.ctgnz</groupId>
                 <artifactId>yaml-flock</artifactId>
                 <version>1.0.0</version>

@@ -33,6 +33,7 @@
     <modules>
         <module>fxtivity-parent</module>
         <module>fxtivity-core</module>
+        <module>fxtivity-controls</module>
     </modules>
 
 </project>
