@@ -29,7 +29,7 @@ That there is exactly **one** effective date per application is the point rather
 
 | | |
 | --- | --- |
-| **`IEffectiveEntity`** | Anything in effect for a period. Implement `getStart`, `getEnd` and their setters; everything else follows. |
+| **`Effective`** | Anything in effect for a period. Implement `getStart`, `getEnd` and their setters; everything else follows. |
 | **`Effectivity`** | A period, closed-open: in effect from its start up to but excluding its end. Also holds the application's effective date. |
 | **`DateRange`** | A closed-open span of dates, with `contains`, `encloses`, `intersection` and `span`. |
 | **`MultiEffectiveList`** | Things that may be in effect at the same time — a person's employments. |

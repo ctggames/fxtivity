@@ -2,16 +2,16 @@ package io.github.ctgnz.fxtivity.employment;
 
 import java.time.LocalDate;
 
+import io.github.ctgnz.fxtivity.Effective;
 import io.github.ctgnz.fxtivity.Effectivity;
-import io.github.ctgnz.fxtivity.IEffectiveEntity;
 
 /**
  * Fowler's {@code Employment}: a person's employment by a company, in effect for a period.
  * <p>
  * Fowler's methods are kept under their own names where they still say something - {@link #company()}, {@link #isEffectiveOn(LocalDate)} - so the example reads against his. His
- * {@code end(MfDate)} and {@code setEffectivity(DateRange)} are supplied by {@link IEffectiveEntity}.
+ * {@code end(MfDate)} and {@code setEffectivity(DateRange)} are supplied by {@link Effective}.
  */
-public final class Employment implements IEffectiveEntity {
+public final class Employment implements Effective {
 
     private final Company company;
     private LocalDate start;

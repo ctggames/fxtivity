@@ -6,9 +6,9 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
+import io.github.ctgnz.fxtivity.Effective;
 import io.github.ctgnz.fxtivity.EffectiveProperty;
 import io.github.ctgnz.fxtivity.Effectivity;
-import io.github.ctgnz.fxtivity.IEffectiveEntity;
 import io.github.ctgnz.fxtivity.MultiEffectiveList;
 
 /**
@@ -20,12 +20,12 @@ import io.github.ctgnz.fxtivity.MultiEffectiveList;
 @JsonPropertyOrder({
     "id", "start", "end", "name"
 })
-public final class Person implements IEffectiveEntity {
+public final class Person implements Effective {
 
     private String id;
     private LocalDate start;
     private LocalDate end = Effectivity.FOREVER;
-    private final @JsonManagedReference EffectiveProperty<String, Person> name = new EffectiveProperty<>(this);
+    private final @JsonManagedReference EffectiveProperty<String> name = new EffectiveProperty<>(this);
     private final @JsonIgnore MultiEffectiveList<Employment> employments = new MultiEffectiveList<>();
 
     Person() {
@@ -77,7 +77,7 @@ public final class Person implements IEffectiveEntity {
     }
 
     /** The name the person went by over time. */
-    public EffectiveProperty<String, Person> name() {
+    public EffectiveProperty<String> name() {
         return name;
     }
 

@@ -17,7 +17,7 @@ public enum Removal {
         /** The removal is refused with {@link IllegalArgumentException}, and nothing changes. */
         Refused {
             @Override
-            <E extends IEffectiveEntity> void remove(SingleEffectiveList<E> list, SortedSet<Integer> indices, List<SingleEffectiveList.Gap<E>> gaps) {
+            <E extends Effective> void remove(SingleEffectiveList<E> list, SortedSet<Integer> indices, List<SingleEffectiveList.Gap<E>> gaps) {
                 if (!gaps.isEmpty()) {
                     SingleEffectiveList.Gap<E> gap = gaps.getFirst();
                     throw new IllegalArgumentException("Removing would leave nothing in effect between " + gap.previous() + " and " + gap.next());
@@ -29,7 +29,7 @@ public enum Removal {
         /** The element before the gap is extended forwards to where the element after it starts. */
         ExtendsPrevious {
             @Override
-            <E extends IEffectiveEntity> void remove(SingleEffectiveList<E> list, SortedSet<Integer> indices, List<SingleEffectiveList.Gap<E>> gaps) {
+            <E extends Effective> void remove(SingleEffectiveList<E> list, SortedSet<Integer> indices, List<SingleEffectiveList.Gap<E>> gaps) {
                 list.removeAt(indices);
                 gaps.forEach(gap -> list.move(list.indexOf(gap.previous()), gap.previous().getStart(), gap.next().getStart()));
             }
@@ -38,13 +38,13 @@ public enum Removal {
         /** The element after the gap is started earlier, where the element before it ends. */
         StartsNextEarlier {
             @Override
-            <E extends IEffectiveEntity> void remove(SingleEffectiveList<E> list, SortedSet<Integer> indices, List<SingleEffectiveList.Gap<E>> gaps) {
+            <E extends Effective> void remove(SingleEffectiveList<E> list, SortedSet<Integer> indices, List<SingleEffectiveList.Gap<E>> gaps) {
                 list.removeAt(indices);
                 gaps.forEach(gap -> list.move(list.indexOf(gap.next()), gap.previous().getEnd(), gap.next().getEnd()));
             }
         };
 
     // Removes the elements at indices from list, given the gaps their removal would leave - each between two elements that remain - and does what this removal does about them.
-    abstract <E extends IEffectiveEntity> void remove(SingleEffectiveList<E> list, SortedSet<Integer> indices, List<SingleEffectiveList.Gap<E>> gaps);
+    abstract <E extends Effective> void remove(SingleEffectiveList<E> list, SortedSet<Integer> indices, List<SingleEffectiveList.Gap<E>> gaps);
 
 }

@@ -1,20 +1,24 @@
 package io.github.ctgnz.fxtivity;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
 
 import java.time.LocalDate;
+import java.util.function.Function;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import io.github.ctgnz.fxtivity.consumer.ExtensibleOwner;
 
 /** A value changing during its owner's lifetime: bounded by the owner's period, and read back as one span per value. */
 class EffectivePropertyTest {
 
     private Term owner;
-    private EffectiveProperty<String, Term> candidate;
+    private EffectiveProperty<String> candidate;
 
     @BeforeEach
     void init() {
@@ -50,10 +54,26 @@ class EffectivePropertyTest {
         assertThat(candidate.toList(value -> Term.of(value, 1970, 1971)), hasSize(0));
     }
 
+    /** Values that are already effective come back as themselves, given their spans' dates - no class argument, no cast. */
     @Test
-    void testToListOfTypeWhenEmpty() {
-        EffectiveProperty<Term, Term> terms = new EffectiveProperty<>(owner);
-        assertThat(terms.toList(Term.class), hasSize(0));
+    void testToListOfValuesThatAreAlreadyEffective() {
+        EffectiveProperty<Term> terms = new EffectiveProperty<>(owner);
+        assertThat(terms.toList(Function.identity()), hasSize(0));
+        Term junior = Term.of("junior", 1900, 1901);
+        Term senior = Term.of("senior", 1900, 1901);
+        terms.setValue(LocalDate.of(1970, 1, 1), junior);
+        terms.setValue(LocalDate.of(1975, 1, 1), senior);
+        SingleEffectiveList<Term> spans = terms.toList(Function.identity());
+        assertThat(spans, contains(junior, senior));
+        assertThat(junior.getEnd(), is(LocalDate.of(1975, 1, 1)));
+        assertThat(senior.getEnd(), is(LocalDate.of(1989, 1, 1)));
+    }
+
+    @Test
+    void testAnExtensibleOwner() {
+        ExtensibleOwner extensible = new ExtensibleOwner();
+        assertThat(extensible.name().setValue(LocalDate.of(1980, 1, 1), "Ext"), is(true));
+        assertThat(extensible.name().getOwner(), is(extensible));
     }
 
     /** Emptying a history that had changes leaves it reading as no spans, rather than as the last one it held. */

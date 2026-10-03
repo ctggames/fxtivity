@@ -38,7 +38,7 @@ import javafx.collections.ObservableList;
  *            the record type
  * @author ctg
  */
-public class EffectiveMap<K extends Comparable<K>, E extends IEffectiveEntity> {
+public class EffectiveMap<K extends Comparable<K>, E extends Effective> {
 
     public final BooleanProperty gapsAllowed = new SimpleBooleanProperty();
     // Every history handed out, including any that are empty - so an editor holding one keeps writing to the map after removing its last record.
@@ -122,8 +122,8 @@ public class EffectiveMap<K extends Comparable<K>, E extends IEffectiveEntity> {
     /**
      * Every record across all keys, as one list that allows overlaps, in date order and then key order.
      * <p>
-     * Read-only, and live: it follows every change to the keys' histories. Changes are made through {@link #put(Comparable, IEffectiveEntity)},
-     * {@link #remove(Comparable, IEffectiveEntity)}, or a key's history.
+     * Read-only, and live: it follows every change to the keys' histories. Changes are made through {@link #put(Comparable, Effective)}, {@link #remove(Comparable, Effective)}, or
+     * a key's history.
      *
      * @return the records
      */
@@ -320,7 +320,7 @@ public class EffectiveMap<K extends Comparable<K>, E extends IEffectiveEntity> {
      * Every record across all keys: derived from the keys' histories, so it refuses every change made to it directly. Records with the same dates are in key order - one key's
      * history cannot hold two.
      */
-    private static final class AllRecords<K, E extends IEffectiveEntity> extends MultiEffectiveList<E> {
+    private static final class AllRecords<K, E extends Effective> extends MultiEffectiveList<E> {
         private final Map<E, K> keys;
 
         AllRecords(Map<E, K> keys, Comparator<? super K> keyOrder) {

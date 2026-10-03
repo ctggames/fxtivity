@@ -15,7 +15,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 @JsonPropertyOrder({
     "id", "start", "end"
 })
-final class Term implements IEffectiveEntity {
+final class Term implements Effective {
 
     private final String id;
     private LocalDate start;

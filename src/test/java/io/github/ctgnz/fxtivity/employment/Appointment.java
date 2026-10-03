@@ -2,14 +2,14 @@ package io.github.ctgnz.fxtivity.employment;
 
 import java.time.LocalDate;
 
-import io.github.ctgnz.fxtivity.IEffectiveEntity;
+import io.github.ctgnz.fxtivity.Effective;
 
 /**
  * Someone holding an office for a period: a company's chief executive, or one seat on its board.
  * <p>
  * An office has one holder at a time, which is what makes a company's chief executives a succession rather than a list of employments.
  */
-public final class Appointment implements IEffectiveEntity {
+public final class Appointment implements Effective {
 
     private final String holder;
     private LocalDate start;

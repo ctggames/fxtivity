@@ -1,6 +1,6 @@
 package io.github.ctgnz.fxtivity;
 
-import static io.github.ctgnz.fxtivity.IEffectiveEntity.DATE_ORDER;
+import static io.github.ctgnz.fxtivity.Effective.DATE_ORDER;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -29,7 +29,7 @@ import javafx.collections.transformation.FilteredList;
  *            the element type
  * @author ctg
  */
-public abstract class EffectiveList<E extends IEffectiveEntity> extends ModifiableObservableListBase<E> {
+public abstract class EffectiveList<E extends Effective> extends ModifiableObservableListBase<E> {
 
     /** Every element, in date order. */
     protected final ObservableList<E> sourceList;
@@ -176,7 +176,7 @@ public abstract class EffectiveList<E extends IEffectiveEntity> extends Modifiab
      *             if the list is empty
      */
     public LocalDate getMaxDate() {
-        return sourceList.stream().map(IEffectiveEntity::getEnd).max(LocalDate::compareTo).orElseThrow();
+        return sourceList.stream().map(Effective::getEnd).max(LocalDate::compareTo).orElseThrow();
     }
 
     /**
