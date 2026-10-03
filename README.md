@@ -100,7 +100,7 @@ Reading then fills the collection you declared, configured as you declared it. A
 
 **[Read the scenarios at ctgnz.github.io/fxtivity](https://ctgnz.github.io/fxtivity/)**.
 
-They are Cucumber features in [`fxtivity-core/src/test/resources/features`](fxtivity-core/src/test/resources/features), written against Fowler's own example — people, companies and the employments between them — and extended with the cases his pattern leaves to others: a name that changes over time, an office with one holder at a time, and a board whose seats each have their own history.
+They are Cucumber features in [`fxtivity-core/src/test/resources/features`](fxtivity-core/src/test/resources/features), written against Fowler's own example — people, companies and the employments between them — and extended with the cases his pattern leaves to others: a name that changes over time, an office with one holder at a time, a board whose seats each have their own history, and departments related to people at both ends.
 
 | Feature | Covers |
 | --- | --- |
@@ -110,6 +110,7 @@ They are Cucumber features in [`fxtivity-core/src/test/resources/features`](fxti
 | `succession.feature` | one holder at a time, vacancies, and the two ways of making room |
 | `names.feature` | a value that changes during its owner's lifetime |
 | `board.feature` | a succession per key |
+| `departments.feature` | a relationship that changes over time, owned at one end and followed at the other, and rebuilt after a load |
 | `serialisation.feature` | the written form, and the owner restored on reading back |
 
 ## Licence

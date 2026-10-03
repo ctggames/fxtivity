@@ -13,7 +13,8 @@ import org.junit.platform.suite.api.Suite;
  * package.
  * <p>
  * The scenarios are the library's specification, written against Fowler's own example - people, companies and the employments between them - extended with the cases his pattern
- * leaves to others: a name that changes over time, an office with one holder at a time, and a board whose seats each have their own history.
+ * leaves to others: a name that changes over time, an office with one holder at a time, a board whose seats each have their own history, and departments related to people at both
+ * ends.
  * <p>
  * The {@code html} plugin writes {@code target/cucumber/scenarios.html}, published to GitHub Pages so the scenarios are readable without cloning the repository.
  * <p>
