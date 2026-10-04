@@ -8,6 +8,7 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Predicate;
 
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.WeakChangeListener;
@@ -391,10 +392,17 @@ public abstract class EffectiveList<E extends Effective> extends ModifiableObser
         return effectiveRecord.getEffectivity().contains(Effectivity.when());
     }
 
-    /** Re-applies the filter after the effective date moves. */
+    /** Re-applies the filter after the effective date moves, as one change: from what was in effect to what is now. */
     protected void updateFilter() {
-        filtered.setPredicate(null);
-        filtered.setPredicate(this::isActive);
+        // In one step. Clearing the predicate first would let every element through, and tell every listener so, before cutting back to what is in effect - a view built on
+        // effective() would briefly see the list's whole history. And a new instance each time, which the FilteredList must see as a new predicate to re-filter at all: the
+        // language does not promise a new object from a lambda or method reference, but it does from an anonymous class.
+        filtered.setPredicate(new Predicate<E>() {
+            @Override
+            public boolean test(E element) {
+                return isActive(element);
+            }
+        });
     }
 
 }
