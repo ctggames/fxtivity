@@ -118,7 +118,7 @@ Reading then fills the collection you declared, configured as you declared it. A
 
 **[Read the scenarios at ctgnz.github.io/fxtivity](https://ctgnz.github.io/fxtivity/)**.
 
-They are Cucumber features in [`fxtivity-core/src/test/resources/features`](fxtivity-core/src/test/resources/features), written against Fowler's own example — people, companies and the employments between them — and extended with the cases his pattern leaves to others: a name that changes over time, an office with one holder at a time, a board whose seats each have their own history, and departments related to people at both ends.
+They are Cucumber features in [`fxtivity-example/src/test/resources/features`](fxtivity-example/src/test/resources/features), written against Fowler's own example — people, companies and the employments between them — and extended with the cases his pattern leaves to others: a name that changes over time, an office with one holder at a time, a board whose seats each have their own history, and departments related to people at both ends.
 
 | Feature | Covers |
 | --- | --- |

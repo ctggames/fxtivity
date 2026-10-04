@@ -224,6 +224,8 @@
                                     module inherits it, so nothing a consumer resolves needs it.
                                 -->
                                 <excludeArtifact>fxtivity</excludeArtifact>
+                                <!-- The worked example and its application: documentation that runs, not a library. -->
+                                <excludeArtifact>fxtivity-example</excludeArtifact>
                             </excludeArtifacts>
                         </configuration>
                     </plugin>

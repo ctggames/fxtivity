@@ -34,6 +34,7 @@
         <module>fxtivity-parent</module>
         <module>fxtivity-core</module>
         <module>fxtivity-controls</module>
+        <module>fxtivity-example</module>
     </modules>
 
 </project>
