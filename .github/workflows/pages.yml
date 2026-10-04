@@ -36,23 +36,27 @@ jobs:
           distribution: 'temurin'
           cache: 'maven'
 
-      # The scenarios write fxtivity-core/target/cucumber/scenarios.html as they run, so running them IS building the
+      # The scenarios write fxtivity-example/target/cucumber/scenarios.html as they run, so running them IS building the
       # report. Deliberately NOT continue-on-error, unlike foxglove's dashboard: there a failure is the
       # content worth publishing, whereas here the report is documentation and a red specification is worse
       # than yesterday's green one.
+      - name: Install Xvfb
+        run: sudo apt-get update && sudo apt-get install -y xvfb
+
       - name: Run the scenarios, which write the report
-        # fxtivity-core only: the scenarios are there, and the controls' tests would need a display.
-        run: mvn -B --no-transfer-progress test -pl fxtivity-core -am
+        # fxtivity-example, where the scenarios are, and the modules it is built on - whose tests include the controls',
+        # which start the toolkit and so need a display, as in CI.
+        run: xvfb-run --auto-servernum mvn -B --no-transfer-progress test -pl fxtivity-example -am
 
       - name: Assemble the site
         run: |
-          if [ ! -f fxtivity-core/target/cucumber/scenarios.html ]; then
-            echo "::error::fxtivity-core/target/cucumber/scenarios.html was not produced - has the html plugin been removed from RunCucumberTest?"
+          if [ ! -f fxtivity-example/target/cucumber/scenarios.html ]; then
+            echo "::error::fxtivity-example/target/cucumber/scenarios.html was not produced - has the html plugin been removed from RunCucumberTest?"
             exit 1
           fi
           mkdir -p target/site
-          cp fxtivity-core/src/site/index.html target/site/index.html
-          cp fxtivity-core/target/cucumber/scenarios.html target/site/scenarios.html
+          cp fxtivity-example/src/site/index.html target/site/index.html
+          cp fxtivity-example/target/cucumber/scenarios.html target/site/scenarios.html
           echo "Site assembled:"
           ls -l target/site
 

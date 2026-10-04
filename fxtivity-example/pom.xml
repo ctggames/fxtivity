@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>io.github.ctgnz</groupId>
+        <artifactId>fxtivity-parent</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
+        <relativePath>../fxtivity-parent/pom.xml</relativePath>
+    </parent>
+
+    <artifactId>fxtivity-example</artifactId>
+    <packaging>jar</packaging>
+
+    <name>fxtivity Example</name>
+    <description>The worked example: Fowler's people and companies extended with departments, a board and a succession of chief executives - the model the scenarios specify the library against, and an application built on it.</description>
+    <url>https://github.com/ctgnz/fxtivity</url>
+
+    <!--
+        Never published (excludeArtifacts in fxtivity-parent): it is documentation that runs, not a
+        library. The model is in the main sources so that the application can use it, and the
+        scenarios, which are written against it, are its tests.
+    -->
+
+    <dependencies>
+        <dependency>
+            <groupId>io.github.ctgnz</groupId>
+            <artifactId>fxtivity-controls</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <!-- The model is saved as YAML, one change per line. -->
+        <dependency>
+            <groupId>io.github.ctgnz</groupId>
+            <artifactId>yaml-flock</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.dataformat</groupId>
+            <artifactId>jackson-dataformat-yaml</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.datatype</groupId>
+            <artifactId>jackson-datatype-jsr310</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.platform</groupId>
+            <artifactId>junit-platform-suite</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.cucumber</groupId>
+            <artifactId>cucumber-java</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.cucumber</groupId>
+            <artifactId>cucumber-junit-platform-engine</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.hamcrest</groupId>
+            <artifactId>hamcrest</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+</project>
