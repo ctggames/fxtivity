@@ -114,6 +114,7 @@ jobs:
       uses: ncipollo/release-action@v1
       with:
         allowUpdates: true
-        # Every published module's jars. The parent publishes only a pom, and the root aggregator nothing.
-        artifacts: "${{ github.workspace }}/fxtivity-*/target/*.jar"
+        # The published modules' jars, named one by one: fxtivity-example builds jars too, and is never
+        # published, so a wildcard over fxtivity-* would attach it here. The parent publishes only a pom.
+        artifacts: "${{ github.workspace }}/fxtivity-core/target/*.jar,${{ github.workspace }}/fxtivity-controls/target/*.jar"
         token: ${{ secrets.GITHUB_TOKEN }}
