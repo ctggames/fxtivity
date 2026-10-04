@@ -3,7 +3,11 @@ package io.github.ctgnz.fxtivity.employment;
 import java.time.LocalDate;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.SortedMap;
+
+import javafx.collections.ObservableList;
 
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -24,11 +28,14 @@ import io.github.ctgnz.fxtivity.SingleEffectiveList;
  * It is founded and may be dissolved, so it is in effect for a period. Its name changes over time - companies get renamed - and it has a succession of chief executives, exactly
  * one at a time, and a board whose seats each change hands independently.
  * <p>
+ * Its employments are recorded on each person's side; the company's list of them is derived, read-only, and kept in step as each person registers their employments with it - the
+ * same arrangement as a department's.
+ * <p>
  * {@code final}, which the harness classes all are: the {@link EffectiveProperty} is created with {@code this} as its owner, and javac's {@code this-escape} check would flag that
  * in any class a subclass could extend.
  */
 @JsonPropertyOrder({
-    "id", "start", "end", "name", "departments"
+    "id", "start", "end", "name", "departments", "chiefExecutives", "board"
 })
 public final class Company implements Effective {
 
@@ -39,6 +46,7 @@ public final class Company implements Effective {
     private final MultiEffectiveList<Department> departments = new MultiEffectiveList<>(Comparator.comparing(Department::getId));
     private final @JsonIgnore SingleEffectiveList<Appointment> chiefExecutives = new SingleEffectiveList<>();
     private final @JsonIgnore EffectiveMap<String, Appointment> board = new EffectiveMap<>(true);
+    private final @JsonIgnore MultiEffectiveList<Employment> employments = new MultiEffectiveList<>(Comparator.comparing(employment -> employment.person().getId()));
 
     Company() {
     }
@@ -63,8 +71,23 @@ public final class Company implements Effective {
     }
 
     /** The company's departments over time - several at once - read-only: they are opened through the company and closed through themselves. */
-    public List<Department> departments() {
+    public ObservableList<Department> departments() {
         return departments.getSourceList();
+    }
+
+    /** The departments open on the application's effective date: read-only, and following the date. */
+    public ObservableList<Department> departmentsInEffect() {
+        return departments.effective();
+    }
+
+    /** Everyone the company has employed, read-only: employments are made and ended on the person's side. */
+    public ObservableList<Employment> employments() {
+        return employments.getSourceList();
+    }
+
+    /** The employments in effect on the application's effective date: read-only, and following the date. */
+    public ObservableList<Employment> employmentsInEffect() {
+        return employments.effective();
     }
 
     /** The department with {@code id}, if the company has had one. */
@@ -135,6 +158,41 @@ public final class Company implements Effective {
     @JsonSetter("departments")
     void setDepartments(List<Department> loaded) {
         departments.load(loaded);
+    }
+
+    @JsonGetter("chiefExecutives")
+    List<Appointment> getChiefExecutives() {
+        return chiefExecutives.getSourceList();
+    }
+
+    @JsonSetter("chiefExecutives")
+    void setChiefExecutives(List<Appointment> loaded) {
+        chiefExecutives.load(loaded);
+    }
+
+    @JsonGetter("board")
+    SortedMap<String, ObservableList<Appointment>> getBoard() {
+        return board.getSourceMap();
+    }
+
+    @JsonSetter("board")
+    void setBoard(Map<String, List<Appointment>> loaded) {
+        board.load(loaded);
+    }
+
+    void reschedule(Department department, LocalDate opened, LocalDate closed) {
+        departments.reschedule(department, opened, closed);
+    }
+
+    // Idempotent, so registering again - a register built over a model already in memory - adds nothing.
+    void register(Employment employment) {
+        if (!employments.contains(employment)) {
+            employments.add(employment);
+        }
+    }
+
+    void unregister(Employment employment) {
+        employments.remove(employment);
     }
 
 }

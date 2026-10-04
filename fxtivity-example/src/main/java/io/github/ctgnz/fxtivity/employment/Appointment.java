@@ -2,6 +2,11 @@ package io.github.ctgnz.fxtivity.employment;
 
 import java.time.LocalDate;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonGetter;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+
 import io.github.ctgnz.fxtivity.Effective;
 
 /**
@@ -9,6 +14,9 @@ import io.github.ctgnz.fxtivity.Effective;
  * <p>
  * An office has one holder at a time, which is what makes a company's chief executives a succession rather than a list of employments.
  */
+@JsonPropertyOrder({
+    "holder", "start", "end"
+})
 public final class Appointment implements Effective {
 
     private final String holder;
@@ -25,7 +33,8 @@ public final class Appointment implements Effective {
      * @param end
      *            the first day out of office
      */
-    public Appointment(String holder, LocalDate start, LocalDate end) {
+    @JsonCreator
+    public Appointment(@JsonProperty("holder") String holder, @JsonProperty("start") LocalDate start, @JsonProperty("end") LocalDate end) {
         this.holder = holder;
         this.start = start;
         this.end = end;
@@ -42,6 +51,7 @@ public final class Appointment implements Effective {
     }
 
     /** Who held the office. */
+    @JsonGetter("holder")
     public String holder() {
         return holder;
     }
