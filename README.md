@@ -131,6 +131,8 @@ Reading then fills the collection you declared, configured as you declared it. A
 
 They are Cucumber features in [`fxtivity-example/src/test/resources/features`](fxtivity-example/src/test/resources/features), written against Fowler's own example — people, companies and the employments between them — and extended with the cases his pattern leaves to others: a name that changes over time, an office with one holder at a time, a board whose seats each have their own history, and departments related to people at both ends.
 
+Each scenario in the report has a picture of how its periods line up, with one row for each history and the effective date drawn as a line across them. A scenario with an action has two: before it and after. Open the scenario's hooks to find them under *After*.
+
 | Feature | Covers |
 | --- | --- |
 | `periods.feature` | closed-open periods: containing, overlapping, enclosing, continuing on |

@@ -6,6 +6,7 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -19,8 +20,10 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 import io.cucumber.datatable.DataTable;
+import io.cucumber.java.After;
 import io.cucumber.java.Before;
 import io.cucumber.java.ParameterType;
+import io.cucumber.java.Scenario;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
@@ -59,6 +62,9 @@ public class EffectivitySteps {
     private boolean outcome;
     private Exception refused;
     private String written;
+    // The scenario drawn as it stood before its first When step, if it has one, and the effective date then.
+    private Timeline before;
+    private LocalDate beforeDate;
 
     /**
      * The effective date is shared by the whole process, so each scenario starts from the same one rather than inheriting whatever the last left behind, or whatever today is.
@@ -66,6 +72,23 @@ public class EffectivitySteps {
     @Before
     public void pinTheEffectiveDate() {
         Effectivity.forDates(DEFAULT_EFFECTIVE_DATE, ACTIVE_START, Effectivity.FOREVER);
+        // Drawn as the first When step starts. Attached at the end, with the picture after: Cucumber takes attachments only from a running step or hook.
+        BeforeTheAction.onFirstAction(() -> {
+            before = timeline();
+            beforeDate = Effectivity.when();
+        });
+    }
+
+    /** Attaches how the periods line up to the report: before the scenario's action, if it has one, and at the end. */
+    @After
+    public void drawTheScenario(Scenario scenario) {
+        if (before != null && !before.isEmpty()) {
+            scenario.attach(before.svg(beforeDate).getBytes(StandardCharsets.UTF_8), "image/svg+xml", "before");
+        }
+        Timeline after = timeline();
+        if (!after.isEmpty()) {
+            scenario.attach(after.svg(Effectivity.when()).getBytes(StandardCharsets.UTF_8), "image/svg+xml", before == null ? "the periods" : "after");
+        }
     }
 
     @ParameterType("\\d{4}-\\d{2}-\\d{2}")
@@ -485,6 +508,42 @@ public class EffectivitySteps {
     private String nameOf(String owner, LocalDate date) {
         Person person = people.get(owner);
         return person != null ? person.name().getEffectiveValue(date) : companies.get(owner).name().getEffectiveValue(date);
+    }
+
+    // Everything the scenario has built that has a history, one track each. Lifespans are left out: they would only frame everything else.
+    private Timeline timeline() {
+        Timeline timeline = new Timeline();
+        if (period != null) {
+            timeline.track("the period", List.of(Timeline.bar("", period)));
+        }
+        if (otherPeriod != null) {
+            timeline.track("the other period", List.of(Timeline.bar("", otherPeriod)));
+        }
+        for (Company company : companies.values()) {
+            String id = company.getId();
+            if (company.name().getSize() > 1) {
+                timeline.track(id + ": name", company.name().toWrappedList().stream().map(span -> Timeline.bar(span.getDelegate(), span)).toList());
+            }
+            timeline.track(id + ": chief executive", company.chiefExecutives().stream().map(appointment -> Timeline.bar(appointment.holder(), appointment)).toList());
+            for (String seat : company.board().keySet()) {
+                timeline.track(id + ": " + seat + " seat", company.board().get(seat).stream().map(appointment -> Timeline.bar(appointment.holder(), appointment)).toList());
+            }
+            timeline.track(id + ": departments", company.departments().stream().map(department -> Timeline.bar(department.getId(), department)).toList());
+        }
+        for (Person person : people.values()) {
+            String id = person.getId();
+            if (person.name().getSize() > 1) {
+                timeline.track(id + ": name", person.name().toWrappedList().stream().map(span -> Timeline.bar(span.getDelegate(), span)).toList());
+            }
+            timeline.track(id + ": employed by", person.employments().stream().map(employment -> Timeline.bar(employment.company().getId(), employment)).toList());
+            timeline.track(id + ": managed by",
+                departments.values()
+                    .stream()
+                    .flatMap(department -> department.managed().stream().filter(management -> management.person() == person).map(management -> Timeline.bar(department.getId(), management)))
+                    .toList());
+            timeline.track(id + ": assigned to", person.assignments().stream().map(assignment -> Timeline.bar(assignment.department().getId(), assignment)).toList());
+        }
+        return timeline;
     }
 
     private String assignedOn(String person, LocalDate date) {
