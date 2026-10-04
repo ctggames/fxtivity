@@ -31,7 +31,7 @@ import io.github.ctgnz.fxtivity.MultiEffectiveList;
  * managing department is an {@link EffectiveProperty}, the assignments a list, and every change registers the person with the departments involved, whose own lists follow.
  */
 @JsonPropertyOrder({
-    "id", "start", "end", "name", "managedBy", "assignments"
+    "id", "start", "end", "name", "employments", "managedBy", "assignments"
 })
 public final class Person implements Effective {
     private String id;
@@ -66,13 +66,33 @@ public final class Person implements Effective {
     /** Fowler's {@code addEmployment(Company, MfDate)}: employment by {@code company} from {@code startDate}, until further notice. */
     public Employment addEmployment(Company company, LocalDate startDate) {
         Employment employment = new Employment(company, startDate);
-        employments.add(employment);
+        addEmployment(employment);
         return employment;
     }
 
     /** Fowler's {@code addEmployment(Employment)}. */
     public void addEmployment(Employment employment) {
+        employment.employ(this);
         employments.add(employment);
+        employment.company().register(employment);
+    }
+
+    /**
+     * Changes {@code employment}'s dates - Fowler's correction of a mistake after the fact - through the person's employments and the company's, so that both follow.
+     *
+     * @return false, changing nothing, if the person's employments refuse the new dates
+     */
+    public boolean reschedule(Employment employment, LocalDate startDate, LocalDate endDate) {
+        Company company = employment.company();
+        company.unregister(employment);
+        boolean changed = employments.reschedule(employment, startDate, endDate);
+        company.register(employment);
+        return changed;
+    }
+
+    /** Ends {@code employment} on {@code date}: the person left. */
+    public boolean leave(Employment employment, LocalDate date) {
+        return reschedule(employment, employment.getStart(), date);
     }
 
     /** Every assignment the person has held, in date order, read-only: they are made and ended through this person. */
@@ -174,6 +194,18 @@ public final class Person implements Effective {
         return id;
     }
 
+    @JsonManagedReference("employments")
+    @JsonGetter("employments")
+    List<Employment> getEmployments() {
+        return employments.getSourceList();
+    }
+
+    @JsonManagedReference("employments")
+    @JsonSetter("employments")
+    void setEmployments(List<Employment> loaded) {
+        employments.load(loaded);
+    }
+
     @JsonManagedReference("assignments")
     @JsonGetter("assignments")
     List<Assignment> getAssignments() {
@@ -196,8 +228,12 @@ public final class Person implements Effective {
         managedByIds = new ArrayList<>(loaded);
     }
 
-    /** After a load: finds the departments named by id, and registers with them. */
-    void resolve(Map<String, Department> departments) {
+    /** After a load: finds the companies and departments named by id, and registers with them. */
+    void resolve(Map<String, Company> companies, Map<String, Department> departments) {
+        for (Employment employment : employments) {
+            employment.resolve(companies);
+            employment.company().register(employment);
+        }
         managedByIds.forEach(entry -> managedBy.setValue(entry.getDate(), entry.getValue() == null ? null : departments.get(entry.getValue())));
         managedByIds = List.of();
         registerManagement();

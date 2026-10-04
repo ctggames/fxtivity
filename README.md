@@ -75,6 +75,17 @@ A separate artifact, because controls need `javafx-controls` and a display. An a
 | **`EffectiveDateCell`** | A day in any `DatePicker` that can only be chosen within the active range. This is how an editor keeps the dates it enters in range. |
 | **`EffectivePropertyPane`** | A starting point for an editor of an `EffectiveProperty`: its changes, one per row. |
 
+## The example
+
+[`fxtivity-example`](fxtivity-example) is a worked example, and it is never published. It holds the model the scenarios are written against: Fowler's people and companies, extended with departments, a board and a succession of chief executives. It also holds an application built on that model.
+
+The application opens on Acme's story: a company growing from a handful of people in 1990 to over a hundred, across five departments, by 2020. Along the way it is renamed, its chief executives succeed one another, and one department closes. An `EffectiveDatePicker` at the top sets the one effective date, and every view follows it: the organisation tree (company, departments, the people each manages), the employees, the board and the header. No view holds a date of its own. *View → Edit mode* adds editors that change the history the way the library intends: through the collections' own methods, with dates chosen through `EffectiveDateCell`. A change that would break a collection's rules is refused and shown as refused. *File* saves and opens the model as YAML.
+
+```sh
+mvn install -DskipTests
+mvn -pl fxtivity-example javafx:run
+```
+
 ## Writing and reading
 
 The model is plain Jackson. An entity's period is written as its `start` and `end`. An `EffectiveProperty` is written as its list of changes alone, with its owner restored from the owner's side by a managed reference, so it is never repeated:

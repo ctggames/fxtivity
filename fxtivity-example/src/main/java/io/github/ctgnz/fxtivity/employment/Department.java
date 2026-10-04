@@ -60,7 +60,8 @@ public final class Department implements Effective {
         if (!containsDate(date)) {
             return false;
         }
-        end = date;
+        // Through the company's departments, not by setting the end here: those lists would go on showing the department as open until the effective date next moved.
+        company.reschedule(this, start, date);
         for (Management management : new ArrayList<>(managed)) {
             if (management.getEnd().isAfter(date)) {
                 management.person().moveTo(null, Effectivity.later(date, management.getStart()));
@@ -96,6 +97,16 @@ public final class Department implements Effective {
     /** Everyone the department has managed over time, each for the span they were managed by it, read-only: who manages a person is set on the person's side. */
     public ObservableList<Management> managed() {
         return managed.getSourceList();
+    }
+
+    /** Whom the department manages on the application's effective date: read-only, and following the date. */
+    public ObservableList<Management> managedInEffect() {
+        return managed.effective();
+    }
+
+    /** The assignments to the department in effect on the application's effective date: read-only, and following the date. */
+    public ObservableList<Assignment> assignedInEffect() {
+        return assigned.effective();
     }
 
     /** The people the department managed on {@code date}. */

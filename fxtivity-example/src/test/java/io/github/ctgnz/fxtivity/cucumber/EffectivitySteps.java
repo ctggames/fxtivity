@@ -189,12 +189,12 @@ public class EffectivitySteps {
     @When("it turns out {name} actually joined {name} on {date}")
     public void itTurnsOutTheyActuallyJoined(String person, String company, LocalDate start) {
         Employment employment = employments.get(person + "@" + company);
-        employment.setEffectivity(Effectivity.create(start, employment.getEnd()));
+        assertThat(people.get(person).reschedule(employment, start, employment.getEnd()), is(true));
     }
 
     @When("{name} left {name} on {date}")
     public void left(String person, String company, LocalDate end) {
-        employments.get(person + "@" + company).end(end);
+        assertThat(people.get(person).leave(employments.get(person + "@" + company), end), is(true));
     }
 
     @Then("{name} is employed by {string}")

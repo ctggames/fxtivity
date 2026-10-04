@@ -1,0 +1,1681 @@
+companies:
+- id: Acme
+  start: 1990-01-01
+  end: 9999-12-31
+  name:
+  - {date: 1990-01-01, value: Acme}
+  - {date: 2005-07-01, value: Acme Holdings}
+  departments:
+  - id: Sales
+    start: 1990-01-01
+    end: 9999-12-31
+    name:
+    - {date: 1990-01-01, value: Sales}
+  - id: Engineering
+    start: 1992-04-01
+    end: 9999-12-31
+    name:
+    - {date: 1992-04-01, value: Engineering}
+  - id: Finance
+    start: 1996-01-01
+    end: 9999-12-31
+    name:
+    - {date: 1996-01-01, value: Finance}
+  - id: Marketing
+    start: 2003-01-01
+    end: 9999-12-31
+    name:
+    - {date: 2003-01-01, value: Marketing}
+    - {date: 2014-01-01, value: Brand}
+  - id: Research
+    start: 2008-06-01
+    end: 2018-01-01
+    name:
+    - {date: 2008-06-01, value: Research}
+  chiefExecutives:
+  - holder: Grace Hollis
+    start: 1990-01-01
+    end: 1999-03-01
+  - holder: Martin Okafor
+    start: 1999-03-01
+    end: 2008-09-01
+  - holder: Priya Raman
+    start: 2008-09-01
+    end: 2016-02-01
+  - holder: Tom Vale
+    start: 2016-02-01
+    end: 9999-12-31
+  board:
+    chair:
+    - holder: Grace Hollis
+      start: 1990-01-01
+      end: 2002-01-01
+    - holder: Lena Ford
+      start: 2002-01-01
+      end: 2013-07-01
+    - holder: Martin Okafor
+      start: 2013-07-01
+      end: 9999-12-31
+    finance:
+    - holder: Sam Ito
+      start: 1996-01-01
+      end: 2006-01-01
+    - holder: Rangi Tait
+      start: 2006-01-01
+      end: 9999-12-31
+    independent:
+    - holder: Joan Price
+      start: 2000-01-01
+      end: 2009-01-01
+    - holder: Ari Cohen
+      start: 2011-01-01
+      end: 9999-12-31
+people:
+- id: Wren Quill
+  start: 1964-12-04
+  end: 9999-12-31
+  name:
+  - {date: 1964-12-04, value: Wren Quill}
+  employments:
+  - company: Acme
+    start: 1990-01-21
+    end: 9999-12-31
+  managedBy:
+  - {date: 1990-01-21, value: Sales}
+  - {date: 1999-01-21, value: Finance}
+- id: Ada Chen
+  start: 1957-02-22
+  end: 9999-12-31
+  name:
+  - {date: 1957-02-22, value: Ada Chen}
+  employments:
+  - company: Acme
+    start: 1990-08-26
+    end: 9999-12-31
+  managedBy:
+  - {date: 1990-08-26, value: Sales}
+- id: Noah Ngata
+  start: 1948-02-17
+  end: 9999-12-31
+  name:
+  - {date: 1948-02-17, value: Noah Ngata}
+  employments:
+  - company: Acme
+    start: 1990-08-18
+    end: 9999-12-31
+  managedBy:
+  - {date: 1990-08-18, value: Sales}
+- id: Dan Hart
+  start: 1968-10-30
+  end: 9999-12-31
+  name:
+  - {date: 1968-10-30, value: Dan Hart}
+  employments:
+  - company: Acme
+    start: 1990-04-23
+    end: 9999-12-31
+  managedBy:
+  - {date: 1990-04-23, value: Sales}
+  - {date: 1995-04-23, value: Engineering}
+- id: Iris Vega
+  start: 1949-10-24
+  end: 9999-12-31
+  name:
+  - {date: 1949-10-24, value: Iris Vega}
+  employments:
+  - company: Acme
+    start: 1991-03-16
+    end: 1993-10-31
+  managedBy:
+  - {date: 1991-03-16, value: Sales}
+  - {date: 1993-10-31}
+- id: Cara Young
+  start: 1953-02-03
+  end: 9999-12-31
+  name:
+  - {date: 1953-02-03, value: Cara Young}
+  employments:
+  - company: Acme
+    start: 1991-05-03
+    end: 9999-12-31
+  managedBy:
+  - {date: 1991-05-03, value: Sales}
+  assignments:
+  - department: Engineering
+    start: 1992-04-03
+    end: 1994-02-03
+- id: Xander Owen
+  start: 1955-02-09
+  end: 9999-12-31
+  name:
+  - {date: 1955-02-09, value: Xander Owen}
+  employments:
+  - company: Acme
+    start: 1992-06-28
+    end: 9999-12-31
+  managedBy:
+  - {date: 1992-06-28, value: Sales}
+  - {date: 1995-06-28, value: Engineering}
+- id: Iris Moana
+  start: 1956-01-15
+  end: 9999-12-31
+  name:
+  - {date: 1956-01-15, value: Iris Moana}
+  employments:
+  - company: Acme
+    start: 1992-10-13
+    end: 9999-12-31
+  managedBy:
+  - {date: 1992-10-13, value: Sales}
+- id: Zane Moana
+  start: 1966-01-03
+  end: 9999-12-31
+  name:
+  - {date: 1966-01-03, value: Zane Moana}
+  employments:
+  - company: Acme
+    start: 1993-05-05
+    end: 9999-12-31
+  managedBy:
+  - {date: 1993-05-05, value: Engineering}
+  assignments:
+  - department: Sales
+    start: 1993-11-05
+    end: 1994-10-05
+- id: Finn Chen
+  start: 1961-11-28
+  end: 9999-12-31
+  name:
+  - {date: 1961-11-28, value: Finn Chen}
+  employments:
+  - company: Acme
+    start: 1993-08-15
+    end: 2002-10-01
+  managedBy:
+  - {date: 1993-08-15, value: Engineering}
+  - {date: 2002-10-01}
+- id: Liam Tane
+  start: 1971-06-20
+  end: 9999-12-31
+  name:
+  - {date: 1971-06-20, value: Liam Tane}
+  employments:
+  - company: Acme
+    start: 1994-07-18
+    end: 2005-01-10
+  managedBy:
+  - {date: 1994-07-18, value: Engineering}
+  - {date: 2005-01-10}
+- id: Gita Vega
+  start: 1951-01-29
+  end: 9999-12-31
+  name:
+  - {date: 1951-01-29, value: Gita Vega}
+  employments:
+  - company: Acme
+    start: 1994-12-09
+    end: 2001-07-11
+  managedBy:
+  - {date: 1994-12-09, value: Engineering}
+  - {date: 2001-07-11}
+- id: Vic Reid
+  start: 1967-05-05
+  end: 9999-12-31
+  name:
+  - {date: 1967-05-05, value: Vic Reid}
+  employments:
+  - company: Acme
+    start: 1995-05-01
+    end: 9999-12-31
+  managedBy:
+  - {date: 1995-05-01, value: Sales}
+- id: Tui Fraser
+  start: 1964-12-27
+  end: 9999-12-31
+  name:
+  - {date: 1964-12-27, value: Tui Fraser}
+  employments:
+  - company: Acme
+    start: 1995-04-16
+    end: 2005-05-04
+  managedBy:
+  - {date: 1995-04-16, value: Engineering}
+  - {date: 2005-05-04}
+- id: Pita Kaur
+  start: 1972-04-07
+  end: 9999-12-31
+  name:
+  - {date: 1972-04-07, value: Pita Kaur}
+  employments:
+  - company: Acme
+    start: 1996-11-02
+    end: 1999-03-17
+  managedBy:
+  - {date: 1996-11-02, value: Engineering}
+  - {date: 1999-03-17}
+- id: Ben Dixon
+  start: 1972-01-03
+  end: 9999-12-31
+  name:
+  - {date: 1972-01-03, value: Ben Dixon}
+  employments:
+  - company: Acme
+    start: 1996-11-09
+    end: 9999-12-31
+  managedBy:
+  - {date: 1996-11-09, value: Engineering}
+- id: Kiri Fraser
+  start: 1963-06-27
+  end: 9999-12-31
+  name:
+  - {date: 1963-06-27, value: Kiri Fraser}
+  employments:
+  - company: Acme
+    start: 1996-10-26
+    end: 9999-12-31
+  managedBy:
+  - {date: 1996-10-26, value: Sales}
+- id: Tui Abbott
+  start: 1967-04-02
+  end: 9999-12-31
+  name:
+  - {date: 1967-04-02, value: Tui Abbott}
+  employments:
+  - company: Acme
+    start: 1997-04-11
+    end: 2006-02-02
+  managedBy:
+  - {date: 1997-04-11, value: Finance}
+  - {date: 2006-02-02}
+  assignments:
+  - department: Engineering
+    start: 1998-05-11
+    end: 1999-09-11
+- id: Vic Jones
+  start: 1964-07-24
+  end: 9999-12-31
+  name:
+  - {date: 1964-07-24, value: Vic Jones}
+  employments:
+  - company: Acme
+    start: 1997-06-25
+    end: 9999-12-31
+  managedBy:
+  - {date: 1997-06-25, value: Finance}
+- id: Finn Ito
+  start: 1966-11-24
+  end: 9999-12-31
+  name:
+  - {date: 1966-11-24, value: Finn Ito}
+  employments:
+  - company: Acme
+    start: 1997-05-22
+    end: 9999-12-31
+  managedBy:
+  - {date: 1997-05-22, value: Engineering}
+- id: Ben Owen
+  start: 1971-12-02
+  end: 9999-12-31
+  name:
+  - {date: 1971-12-02, value: Ben Owen}
+  employments:
+  - company: Acme
+    start: 1998-09-28
+    end: 9999-12-31
+  managedBy:
+  - {date: 1998-09-28, value: Finance}
+  assignments:
+  - department: Sales
+    start: 2000-12-28
+    end: 2002-12-28
+- id: Sam Usher
+  start: 1956-09-11
+  end: 9999-12-31
+  name:
+  - {date: 1956-09-11, value: Sam Usher}
+  employments:
+  - company: Acme
+    start: 1998-09-26
+    end: 2005-12-16
+  managedBy:
+  - {date: 1998-09-26, value: Engineering}
+  - {date: 2005-12-16}
+  assignments:
+  - department: Finance
+    start: 2001-06-26
+    end: 2002-10-26
+- id: Fern Evans
+  start: 1969-11-29
+  end: 9999-12-31
+  name:
+  - {date: 1969-11-29, value: Fern Evans}
+  employments:
+  - company: Acme
+    start: 1998-08-06
+    end: 2009-12-20
+  managedBy:
+  - {date: 1998-08-06, value: Sales}
+  - {date: 2009-12-20}
+  assignments:
+  - department: Engineering
+    start: 2001-11-06
+    end: 2003-01-06
+- id: Uma Hart
+  start: 1971-11-05
+  end: 9999-12-31
+  name:
+  - {date: 1971-11-05, value: Uma Hart}
+  - {date: 2001-04-01, value: Uma Quill}
+  employments:
+  - company: Acme
+    start: 1999-04-01
+    end: 2003-06-22
+  managedBy:
+  - {date: 1999-04-01, value: Finance}
+  - {date: 2003-06-22}
+- id: Olive Grant
+  start: 1956-06-21
+  end: 9999-12-31
+  name:
+  - {date: 1956-06-21, value: Olive Grant}
+  employments:
+  - company: Acme
+    start: 1999-07-13
+    end: 9999-12-31
+  managedBy:
+  - {date: 1999-07-13, value: Sales}
+  - {date: 2008-07-13, value: Finance}
+  assignments:
+  - department: Engineering
+    start: 2002-12-13
+    end: 2003-07-13
+- id: Hugo Ito
+  start: 1961-07-25
+  end: 9999-12-31
+  name:
+  - {date: 1961-07-25, value: Hugo Ito}
+  employments:
+  - company: Acme
+    start: 1999-07-05
+    end: 9999-12-31
+  managedBy:
+  - {date: 1999-07-05, value: Finance}
+  - {date: 2003-07-05, value: Sales}
+- id: Zane Ito
+  start: 1971-01-26
+  end: 9999-12-31
+  name:
+  - {date: 1971-01-26, value: Zane Ito}
+  employments:
+  - company: Acme
+    start: 2000-11-08
+    end: 9999-12-31
+  managedBy:
+  - {date: 2000-11-08, value: Sales}
+- id: Kiri Tane
+  start: 1971-04-29
+  end: 9999-12-31
+  name:
+  - {date: 1971-04-29, value: Kiri Tane}
+  employments:
+  - company: Acme
+    start: 2000-01-13
+    end: 2004-10-12
+  managedBy:
+  - {date: 2000-01-13, value: Engineering}
+  - {date: 2004-10-12}
+  assignments:
+  - department: Finance
+    start: 2001-02-13
+    end: 2002-06-13
+- id: Kiri Hart
+  start: 1964-07-18
+  end: 9999-12-31
+  name:
+  - {date: 1964-07-18, value: Kiri Hart}
+  employments:
+  - company: Acme
+    start: 2000-07-20
+    end: 9999-12-31
+  managedBy:
+  - {date: 2000-07-20, value: Finance}
+  - {date: 2006-07-20, value: Sales}
+- id: Zane Zhou
+  start: 1965-03-06
+  end: 9999-12-31
+  name:
+  - {date: 1965-03-06, value: Zane Zhou}
+  employments:
+  - company: Acme
+    start: 2001-04-20
+    end: 9999-12-31
+  managedBy:
+  - {date: 2001-04-20, value: Sales}
+  assignments:
+  - department: Finance
+    start: 2002-10-20
+    end: 2004-04-20
+- id: Zane Evans
+  start: 1957-10-17
+  end: 9999-12-31
+  name:
+  - {date: 1957-10-17, value: Zane Evans}
+  - {date: 2002-01-16, value: Zane Barker}
+  employments:
+  - company: Acme
+    start: 2001-01-16
+    end: 2010-01-24
+  managedBy:
+  - {date: 2001-01-16, value: Engineering}
+  - {date: 2010-01-24}
+- id: Finn Lowe
+  start: 1963-09-20
+  end: 9999-12-31
+  name:
+  - {date: 1963-09-20, value: Finn Lowe}
+  employments:
+  - company: Acme
+    start: 2001-10-22
+    end: 9999-12-31
+  managedBy:
+  - {date: 2001-10-22, value: Finance}
+  assignments:
+  - department: Sales
+    start: 2003-11-22
+    end: 2005-11-22
+- id: Wren Zhou
+  start: 1959-10-11
+  end: 9999-12-31
+  name:
+  - {date: 1959-10-11, value: Wren Zhou}
+  employments:
+  - company: Acme
+    start: 2002-08-16
+    end: 9999-12-31
+  managedBy:
+  - {date: 2002-08-16, value: Sales}
+  - {date: 2006-08-16, value: Engineering}
+  assignments:
+  - department: Marketing
+    start: 2003-08-16
+    end: 2006-01-16
+- id: Ada Reid
+  start: 1973-12-26
+  end: 9999-12-31
+  name:
+  - {date: 1973-12-26, value: Ada Reid}
+  employments:
+  - company: Acme
+    start: 2002-07-01
+    end: 9999-12-31
+  managedBy:
+  - {date: 2002-07-01, value: Engineering}
+- id: Liam Kaur
+  start: 1975-05-03
+  end: 9999-12-31
+  name:
+  - {date: 1975-05-03, value: Liam Kaur}
+  employments:
+  - company: Acme
+    start: 2002-07-07
+    end: 9999-12-31
+  managedBy:
+  - {date: 2002-07-07, value: Engineering}
+- id: Finn Owen
+  start: 1961-03-27
+  end: 9999-12-31
+  name:
+  - {date: 1961-03-27, value: Finn Owen}
+  employments:
+  - company: Acme
+    start: 2002-04-05
+    end: 9999-12-31
+  managedBy:
+  - {date: 2002-04-05, value: Finance}
+  - {date: 2010-04-05, value: Engineering}
+- id: Yuki Kaur
+  start: 1966-06-04
+  end: 9999-12-31
+  name:
+  - {date: 1966-06-04, value: Yuki Kaur}
+  employments:
+  - company: Acme
+    start: 2003-03-01
+    end: 2012-05-21
+  managedBy:
+  - {date: 2003-03-01, value: Marketing}
+  - {date: 2012-05-21}
+- id: Ben Lowe
+  start: 1974-01-12
+  end: 9999-12-31
+  name:
+  - {date: 1974-01-12, value: Ben Lowe}
+  employments:
+  - company: Acme
+    start: 2003-01-14
+    end: 9999-12-31
+  managedBy:
+  - {date: 2003-01-14, value: Finance}
+  assignments:
+  - department: Engineering
+    start: 2005-04-14
+    end: 2006-03-14
+- id: Chloe Tane
+  start: 1958-02-23
+  end: 9999-12-31
+  name:
+  - {date: 1958-02-23, value: Chloe Tane}
+  employments:
+  - company: Acme
+    start: 2003-09-27
+    end: 2012-05-18
+  managedBy:
+  - {date: 2003-09-27, value: Engineering}
+  - {date: 2009-09-27, value: Research}
+  - {date: 2012-05-18}
+- id: Jack Kaur
+  start: 1980-04-12
+  end: 9999-12-31
+  name:
+  - {date: 1980-04-12, value: Jack Kaur}
+  employments:
+  - company: Acme
+    start: 2003-08-19
+    end: 9999-12-31
+  managedBy:
+  - {date: 2003-08-19, value: Engineering}
+- id: Gita Ngata
+  start: 1960-04-27
+  end: 9999-12-31
+  name:
+  - {date: 1960-04-27, value: Gita Ngata}
+  employments:
+  - company: Acme
+    start: 2004-06-15
+    end: 9999-12-31
+  managedBy:
+  - {date: 2004-06-15, value: Engineering}
+  assignments:
+  - department: Sales
+    start: 2005-01-15
+    end: 2007-04-15
+- id: Dev Kaur
+  start: 1981-09-04
+  end: 9999-12-31
+  name:
+  - {date: 1981-09-04, value: Dev Kaur}
+  employments:
+  - company: Acme
+    start: 2004-12-09
+    end: 2016-03-01
+  managedBy:
+  - {date: 2004-12-09, value: Marketing}
+  - {date: 2016-03-01}
+- id: Hugo Usher
+  start: 1979-02-07
+  end: 9999-12-31
+  name:
+  - {date: 1979-02-07, value: Hugo Usher}
+  employments:
+  - company: Acme
+    start: 2004-09-22
+    end: 9999-12-31
+  managedBy:
+  - {date: 2004-09-22, value: Marketing}
+- id: Sam Grant
+  start: 1967-12-07
+  end: 9999-12-31
+  name:
+  - {date: 1967-12-07, value: Sam Grant}
+  employments:
+  - company: Acme
+    start: 2004-07-04
+    end: 9999-12-31
+  managedBy:
+  - {date: 2004-07-04, value: Marketing}
+  assignments:
+  - department: Engineering
+    start: 2005-02-04
+    end: 2005-12-04
+- id: Ben Grant
+  start: 1967-08-08
+  end: 9999-12-31
+  name:
+  - {date: 1967-08-08, value: Ben Grant}
+  employments:
+  - company: Acme
+    start: 2005-03-24
+    end: 9999-12-31
+  managedBy:
+  - {date: 2005-03-24, value: Marketing}
+- id: Erin Moana
+  start: 1982-11-10
+  end: 9999-12-31
+  name:
+  - {date: 1982-11-10, value: Erin Moana}
+  employments:
+  - company: Acme
+    start: 2005-07-26
+    end: 9999-12-31
+  managedBy:
+  - {date: 2005-07-26, value: Marketing}
+- id: Ben Ngata
+  start: 1968-05-28
+  end: 9999-12-31
+  name:
+  - {date: 1968-05-28, value: Ben Ngata}
+  employments:
+  - company: Acme
+    start: 2005-06-14
+    end: 9999-12-31
+  managedBy:
+  - {date: 2005-06-14, value: Engineering}
+  - {date: 2012-06-14, value: Sales}
+  assignments:
+  - department: Marketing
+    start: 2006-11-14
+    end: 2007-06-14
+- id: Sam Hart
+  start: 1978-09-03
+  end: 9999-12-31
+  name:
+  - {date: 1978-09-03, value: Sam Hart}
+  employments:
+  - company: Acme
+    start: 2005-03-05
+    end: 9999-12-31
+  managedBy:
+  - {date: 2005-03-05, value: Engineering}
+- id: Hugo Patel
+  start: 1962-07-03
+  end: 9999-12-31
+  name:
+  - {date: 1962-07-03, value: Hugo Patel}
+  employments:
+  - company: Acme
+    start: 2006-11-17
+    end: 9999-12-31
+  managedBy:
+  - {date: 2006-11-17, value: Finance}
+  assignments:
+  - department: Marketing
+    start: 2007-10-17
+    end: 2009-11-17
+- id: Quinn Usher
+  start: 1962-04-01
+  end: 9999-12-31
+  name:
+  - {date: 1962-04-01, value: Quinn Usher}
+  - {date: 2007-06-27, value: Quinn Dixon}
+  employments:
+  - company: Acme
+    start: 2006-06-27
+    end: 2012-02-14
+  managedBy:
+  - {date: 2006-06-27, value: Sales}
+  - {date: 2012-02-14}
+- id: Dan Barker
+  start: 1969-05-15
+  end: 9999-12-31
+  name:
+  - {date: 1969-05-15, value: Dan Barker}
+  employments:
+  - company: Acme
+    start: 2006-01-25
+    end: 2008-08-31
+  managedBy:
+  - {date: 2006-01-25, value: Sales}
+  - {date: 2008-08-31}
+- id: Aroha Barker
+  start: 1965-08-12
+  end: 9999-12-31
+  name:
+  - {date: 1965-08-12, value: Aroha Barker}
+  employments:
+  - company: Acme
+    start: 2006-03-28
+    end: 9999-12-31
+  managedBy:
+  - {date: 2006-03-28, value: Sales}
+  - {date: 2015-03-28, value: Marketing}
+- id: Kiri Ngata
+  start: 1970-09-12
+  end: 9999-12-31
+  name:
+  - {date: 1970-09-12, value: Kiri Ngata}
+  employments:
+  - company: Acme
+    start: 2007-12-13
+    end: 2012-02-17
+  managedBy:
+  - {date: 2007-12-13, value: Sales}
+  - {date: 2012-02-17}
+- id: Tui Young
+  start: 1962-08-06
+  end: 9999-12-31
+  name:
+  - {date: 1962-08-06, value: Tui Young}
+  employments:
+  - company: Acme
+    start: 2007-04-03
+    end: 9999-12-31
+  managedBy:
+  - {date: 2007-04-03, value: Finance}
+- id: Sam Zhou
+  start: 1963-12-07
+  end: 9999-12-31
+  name:
+  - {date: 1963-12-07, value: Sam Zhou}
+  employments:
+  - company: Acme
+    start: 2007-02-02
+    end: 2015-11-01
+  managedBy:
+  - {date: 2007-02-02, value: Engineering}
+  - {date: 2015-11-01}
+  assignments:
+  - department: Sales
+    start: 2010-04-02
+    end: 2012-08-02
+- id: Bruno Tane
+  start: 1973-09-24
+  end: 9999-12-31
+  name:
+  - {date: 1973-09-24, value: Bruno Tane}
+  employments:
+  - company: Acme
+    start: 2007-02-02
+    end: 9999-12-31
+  managedBy:
+  - {date: 2007-02-02, value: Finance}
+  assignments:
+  - department: Engineering
+    start: 2010-06-02
+    end: 2012-11-02
+- id: Pita Jones
+  start: 1986-01-21
+  end: 9999-12-31
+  name:
+  - {date: 1986-01-21, value: Pita Jones}
+  employments:
+  - company: Acme
+    start: 2008-05-07
+    end: 9999-12-31
+  managedBy:
+  - {date: 2008-05-07, value: Engineering}
+- id: Iris Reid
+  start: 1977-07-08
+  end: 9999-12-31
+  name:
+  - {date: 1977-07-08, value: Iris Reid}
+  employments:
+  - company: Acme
+    start: 2008-05-16
+    end: 2017-03-07
+  managedBy:
+  - {date: 2008-05-16, value: Engineering}
+  - {date: 2017-03-07}
+- id: Ben Moana
+  start: 1984-07-17
+  end: 9999-12-31
+  name:
+  - {date: 1984-07-17, value: Ben Moana}
+  employments:
+  - company: Acme
+    start: 2008-02-18
+    end: 9999-12-31
+  managedBy:
+  - {date: 2008-02-18, value: Finance}
+- id: Kiri Singh
+  start: 1973-11-01
+  end: 9999-12-31
+  name:
+  - {date: 1973-11-01, value: Kiri Singh}
+  - {date: 2011-12-28, value: Kiri Patel}
+  employments:
+  - company: Acme
+    start: 2008-12-28
+    end: 9999-12-31
+  managedBy:
+  - {date: 2008-12-28, value: Finance}
+- id: Sam Owen
+  start: 1963-06-10
+  end: 9999-12-31
+  name:
+  - {date: 1963-06-10, value: Sam Owen}
+  employments:
+  - company: Acme
+    start: 2008-12-11
+    end: 9999-12-31
+  managedBy:
+  - {date: 2008-12-11, value: Engineering}
+- id: Iris Zhou
+  start: 1974-09-27
+  end: 9999-12-31
+  name:
+  - {date: 1974-09-27, value: Iris Zhou}
+  employments:
+  - company: Acme
+    start: 2009-02-08
+    end: 2020-10-30
+  managedBy:
+  - {date: 2009-02-08, value: Research}
+  - {date: 2013-02-08, value: Sales}
+  - {date: 2020-10-30}
+  assignments:
+  - department: Finance
+    start: 2011-10-08
+    end: 2014-01-08
+- id: Mia Young
+  start: 1973-03-07
+  end: 9999-12-31
+  name:
+  - {date: 1973-03-07, value: Mia Young}
+  employments:
+  - company: Acme
+    start: 2009-08-12
+    end: 9999-12-31
+  managedBy:
+  - {date: 2009-08-12, value: Research}
+  - {date: 2018-01-01, value: Engineering}
+- id: Pita Quill
+  start: 1977-08-28
+  end: 9999-12-31
+  name:
+  - {date: 1977-08-28, value: Pita Quill}
+  employments:
+  - company: Acme
+    start: 2009-01-16
+    end: 9999-12-31
+  managedBy:
+  - {date: 2009-01-16, value: Engineering}
+  - {date: 2012-01-16, value: Finance}
+- id: Dan Ngata
+  start: 1971-10-13
+  end: 9999-12-31
+  name:
+  - {date: 1971-10-13, value: Dan Ngata}
+  employments:
+  - company: Acme
+    start: 2009-01-14
+    end: 9999-12-31
+  managedBy:
+  - {date: 2009-01-14, value: Research}
+  - {date: 2018-01-01, value: Engineering}
+  assignments:
+  - department: Engineering
+    start: 2010-04-14
+    end: 2011-05-14
+- id: Quinn Zhou
+  start: 1985-10-27
+  end: 9999-12-31
+  name:
+  - {date: 1985-10-27, value: Quinn Zhou}
+  employments:
+  - company: Acme
+    start: 2009-09-19
+    end: 9999-12-31
+  managedBy:
+  - {date: 2009-09-19, value: Research}
+  - {date: 2018-01-01, value: Engineering}
+- id: Jack Moana
+  start: 1983-07-30
+  end: 9999-12-31
+  name:
+  - {date: 1983-07-30, value: Jack Moana}
+  employments:
+  - company: Acme
+    start: 2010-02-02
+    end: 9999-12-31
+  managedBy:
+  - {date: 2010-02-02, value: Research}
+  - {date: 2018-01-01, value: Engineering}
+- id: Xander Barker
+  start: 1977-05-04
+  end: 9999-12-31
+  name:
+  - {date: 1977-05-04, value: Xander Barker}
+  employments:
+  - company: Acme
+    start: 2010-09-01
+    end: 9999-12-31
+  managedBy:
+  - {date: 2010-09-01, value: Marketing}
+  - {date: 2017-09-01, value: Sales}
+- id: Uma Moana
+  start: 1969-10-16
+  end: 9999-12-31
+  name:
+  - {date: 1969-10-16, value: Uma Moana}
+  employments:
+  - company: Acme
+    start: 2010-11-08
+    end: 9999-12-31
+  managedBy:
+  - {date: 2010-11-08, value: Engineering}
+- id: Erin Vega
+  start: 1983-09-22
+  end: 9999-12-31
+  name:
+  - {date: 1983-09-22, value: Erin Vega}
+  employments:
+  - company: Acme
+    start: 2010-08-22
+    end: 2014-03-08
+  managedBy:
+  - {date: 2010-08-22, value: Finance}
+  - {date: 2014-03-08}
+- id: Ben Patel
+  start: 1982-11-19
+  end: 9999-12-31
+  name:
+  - {date: 1982-11-19, value: Ben Patel}
+  employments:
+  - company: Acme
+    start: 2010-08-26
+    end: 9999-12-31
+  managedBy:
+  - {date: 2010-08-26, value: Finance}
+- id: Fern Usher
+  start: 1978-08-13
+  end: 9999-12-31
+  name:
+  - {date: 1978-08-13, value: Fern Usher}
+  employments:
+  - company: Acme
+    start: 2011-11-26
+    end: 9999-12-31
+  managedBy:
+  - {date: 2011-11-26, value: Engineering}
+- id: Pita Evans
+  start: 1974-09-20
+  end: 9999-12-31
+  name:
+  - {date: 1974-09-20, value: Pita Evans}
+  employments:
+  - company: Acme
+    start: 2011-02-24
+    end: 2016-08-08
+  managedBy:
+  - {date: 2011-02-24, value: Sales}
+  - {date: 2016-08-08}
+- id: Iris Kaur
+  start: 1977-09-06
+  end: 9999-12-31
+  name:
+  - {date: 1977-09-06, value: Iris Kaur}
+  employments:
+  - company: Acme
+    start: 2011-07-21
+    end: 9999-12-31
+  managedBy:
+  - {date: 2011-07-21, value: Research}
+  - {date: 2018-01-01, value: Engineering}
+  - {date: 2019-07-21, value: Finance}
+- id: Ada Owen
+  start: 1966-04-02
+  end: 9999-12-31
+  name:
+  - {date: 1966-04-02, value: Ada Owen}
+  employments:
+  - company: Acme
+    start: 2011-11-25
+    end: 2015-07-10
+  managedBy:
+  - {date: 2011-11-25, value: Engineering}
+  - {date: 2015-07-10}
+  assignments:
+  - department: Finance
+    start: 2012-07-25
+    end: 2014-08-25
+- id: Fern Jones
+  start: 1980-05-02
+  end: 9999-12-31
+  name:
+  - {date: 1980-05-02, value: Fern Jones}
+  employments:
+  - company: Acme
+    start: 2011-12-08
+    end: 9999-12-31
+  managedBy:
+  - {date: 2011-12-08, value: Sales}
+  - {date: 2019-12-08}
+- id: Jack Quill
+  start: 1982-01-06
+  end: 9999-12-31
+  name:
+  - {date: 1982-01-06, value: Jack Quill}
+  - {date: 2018-03-08, value: Jack Reid}
+  employments:
+  - company: Acme
+    start: 2012-03-08
+    end: 9999-12-31
+  managedBy:
+  - {date: 2012-03-08, value: Finance}
+  assignments:
+  - department: Sales
+    start: 2015-08-08
+    end: 2016-06-08
+- id: Wren Grant
+  start: 1989-09-02
+  end: 9999-12-31
+  name:
+  - {date: 1989-09-02, value: Wren Grant}
+  employments:
+  - company: Acme
+    start: 2012-01-28
+    end: 9999-12-31
+  managedBy:
+  - {date: 2012-01-28, value: Engineering}
+- id: Zane Reid
+  start: 1984-10-20
+  end: 9999-12-31
+  name:
+  - {date: 1984-10-20, value: Zane Reid}
+  employments:
+  - company: Acme
+    start: 2012-07-14
+    end: 9999-12-31
+  managedBy:
+  - {date: 2012-07-14, value: Marketing}
+  - {date: 2017-07-14, value: Engineering}
+- id: Ben Chen
+  start: 1967-02-10
+  end: 9999-12-31
+  name:
+  - {date: 1967-02-10, value: Ben Chen}
+  employments:
+  - company: Acme
+    start: 2012-04-08
+    end: 9999-12-31
+  managedBy:
+  - {date: 2012-04-08, value: Sales}
+- id: Quinn Evans
+  start: 1986-02-10
+  end: 9999-12-31
+  name:
+  - {date: 1986-02-10, value: Quinn Evans}
+  employments:
+  - company: Acme
+    start: 2012-07-24
+    end: 2016-09-23
+  managedBy:
+  - {date: 2012-07-24, value: Engineering}
+  - {date: 2016-09-23}
+- id: Kiri Vega
+  start: 1990-07-27
+  end: 9999-12-31
+  name:
+  - {date: 1990-07-27, value: Kiri Vega}
+  employments:
+  - company: Acme
+    start: 2013-05-20
+    end: 9999-12-31
+  managedBy:
+  - {date: 2013-05-20, value: Finance}
+  - {date: 2017-05-20, value: Marketing}
+- id: Cara Walsh
+  start: 1972-01-06
+  end: 9999-12-31
+  name:
+  - {date: 1972-01-06, value: Cara Walsh}
+  employments:
+  - company: Acme
+    start: 2013-09-22
+    end: 9999-12-31
+  managedBy:
+  - {date: 2013-09-22, value: Finance}
+  - {date: 2015-09-22, value: Engineering}
+- id: Finn Fraser
+  start: 1969-05-11
+  end: 9999-12-31
+  name:
+  - {date: 1969-05-11, value: Finn Fraser}
+  employments:
+  - company: Acme
+    start: 2013-09-02
+    end: 9999-12-31
+  managedBy:
+  - {date: 2013-09-02, value: Engineering}
+- id: Fern Tane
+  start: 1987-03-29
+  end: 9999-12-31
+  name:
+  - {date: 1987-03-29, value: Fern Tane}
+  employments:
+  - company: Acme
+    start: 2013-11-08
+    end: 9999-12-31
+  managedBy:
+  - {date: 2013-11-08, value: Finance}
+  - {date: 2016-11-08, value: Research}
+  - {date: 2018-01-01, value: Engineering}
+  assignments:
+  - department: Sales
+    start: 2014-10-08
+    end: 2015-12-08
+- id: Aroha Reid
+  start: 1968-04-21
+  end: 9999-12-31
+  name:
+  - {date: 1968-04-21, value: Aroha Reid}
+  employments:
+  - company: Acme
+    start: 2013-06-19
+    end: 9999-12-31
+  managedBy:
+  - {date: 2013-06-19, value: Finance}
+  assignments:
+  - department: Sales
+    start: 2016-05-19
+    end: 2018-07-19
+- id: Dan Reid
+  start: 1988-03-23
+  end: 9999-12-31
+  name:
+  - {date: 1988-03-23, value: Dan Reid}
+  employments:
+  - company: Acme
+    start: 2014-08-06
+    end: 2017-04-04
+  managedBy:
+  - {date: 2014-08-06, value: Finance}
+  - {date: 2017-04-04}
+- id: Yuki Reid
+  start: 1978-07-04
+  end: 9999-12-31
+  name:
+  - {date: 1978-07-04, value: Yuki Reid}
+  employments:
+  - company: Acme
+    start: 2014-11-14
+    end: 9999-12-31
+  managedBy:
+  - {date: 2014-11-14, value: Finance}
+- id: Cara Owen
+  start: 1973-12-12
+  end: 9999-12-31
+  name:
+  - {date: 1973-12-12, value: Cara Owen}
+  employments:
+  - company: Acme
+    start: 2014-05-08
+    end: 9999-12-31
+  managedBy:
+  - {date: 2014-05-08, value: Research}
+  - {date: 2018-01-01, value: Engineering}
+  assignments:
+  - department: Sales
+    start: 2016-02-08
+    end: 2017-06-08
+- id: Aroha Kaur
+  start: 1977-05-24
+  end: 9999-12-31
+  name:
+  - {date: 1977-05-24, value: Aroha Kaur}
+  employments:
+  - company: Acme
+    start: 2014-04-03
+    end: 9999-12-31
+  managedBy:
+  - {date: 2014-04-03, value: Engineering}
+  assignments:
+  - department: Marketing
+    start: 2015-07-03
+    end: 2017-10-03
+- id: Noah Singh
+  start: 1982-01-02
+  end: 9999-12-31
+  name:
+  - {date: 1982-01-02, value: Noah Singh}
+  employments:
+  - company: Acme
+    start: 2014-10-10
+    end: 9999-12-31
+  managedBy:
+  - {date: 2014-10-10, value: Research}
+  - {date: 2018-01-01, value: Engineering}
+  assignments:
+  - department: Engineering
+    start: 2015-07-10
+    end: 2017-06-10
+- id: Xander Ngata
+  start: 1971-03-04
+  end: 9999-12-31
+  name:
+  - {date: 1971-03-04, value: Xander Ngata}
+  employments:
+  - company: Acme
+    start: 2014-03-13
+    end: 9999-12-31
+  managedBy:
+  - {date: 2014-03-13, value: Sales}
+  - {date: 2020-03-13, value: Finance}
+- id: Uma Abbott
+  start: 1983-11-03
+  end: 9999-12-31
+  name:
+  - {date: 1983-11-03, value: Uma Abbott}
+  employments:
+  - company: Acme
+    start: 2015-12-08
+    end: 9999-12-31
+  managedBy:
+  - {date: 2015-12-08, value: Finance}
+  assignments:
+  - department: Sales
+    start: 2018-11-08
+    end: 2020-07-08
+- id: Noah Chen
+  start: 1977-01-29
+  end: 9999-12-31
+  name:
+  - {date: 1977-01-29, value: Noah Chen}
+  employments:
+  - company: Acme
+    start: 2015-01-11
+    end: 9999-12-31
+  managedBy:
+  - {date: 2015-01-11, value: Finance}
+- id: Fern Fraser
+  start: 1992-08-11
+  end: 9999-12-31
+  name:
+  - {date: 1992-08-11, value: Fern Fraser}
+  employments:
+  - company: Acme
+    start: 2015-08-26
+    end: 9999-12-31
+  managedBy:
+  - {date: 2015-08-26, value: Sales}
+- id: Tui Hart
+  start: 1977-10-11
+  end: 9999-12-31
+  name:
+  - {date: 1977-10-11, value: Tui Hart}
+  employments:
+  - company: Acme
+    start: 2015-08-26
+    end: 2020-03-26
+  managedBy:
+  - {date: 2015-08-26, value: Finance}
+  - {date: 2020-03-26}
+- id: Hugo Moana
+  start: 1986-04-12
+  end: 9999-12-31
+  name:
+  - {date: 1986-04-12, value: Hugo Moana}
+  employments:
+  - company: Acme
+    start: 2015-10-06
+    end: 9999-12-31
+  managedBy:
+  - {date: 2015-10-06, value: Sales}
+- id: Mia Hart
+  start: 1981-06-16
+  end: 9999-12-31
+  name:
+  - {date: 1981-06-16, value: Mia Hart}
+  employments:
+  - company: Acme
+    start: 2015-05-13
+    end: 9999-12-31
+  managedBy:
+  - {date: 2015-05-13, value: Engineering}
+- id: Jack Jones
+  start: 1987-02-01
+  end: 9999-12-31
+  name:
+  - {date: 1987-02-01, value: Jack Jones}
+  employments:
+  - company: Acme
+    start: 2016-10-11
+    end: 9999-12-31
+  managedBy:
+  - {date: 2016-10-11, value: Finance}
+- id: Zane Dixon
+  start: 1971-12-17
+  end: 9999-12-31
+  name:
+  - {date: 1971-12-17, value: Zane Dixon}
+  - {date: 2018-09-22, value: Zane Young}
+  employments:
+  - company: Acme
+    start: 2016-09-22
+    end: 9999-12-31
+  managedBy:
+  - {date: 2016-09-22, value: Sales}
+- id: Noah Evans
+  start: 1983-06-19
+  end: 9999-12-31
+  name:
+  - {date: 1983-06-19, value: Noah Evans}
+  - {date: 2017-02-13, value: Noah Lowe}
+  employments:
+  - company: Acme
+    start: 2016-02-13
+    end: 9999-12-31
+  managedBy:
+  - {date: 2016-02-13, value: Research}
+  - {date: 2018-01-01, value: Engineering}
+- id: Quinn Patel
+  start: 1973-07-09
+  end: 9999-12-31
+  name:
+  - {date: 1973-07-09, value: Quinn Patel}
+  employments:
+  - company: Acme
+    start: 2016-08-03
+    end: 9999-12-31
+  managedBy:
+  - {date: 2016-08-03, value: Sales}
+- id: Rosa Jones
+  start: 1974-06-15
+  end: 9999-12-31
+  name:
+  - {date: 1974-06-15, value: Rosa Jones}
+  employments:
+  - company: Acme
+    start: 2016-07-28
+    end: 9999-12-31
+  managedBy:
+  - {date: 2016-07-28, value: Engineering}
+  - {date: 2018-07-28}
+- id: Chloe Quill
+  start: 1987-02-24
+  end: 9999-12-31
+  name:
+  - {date: 1987-02-24, value: Chloe Quill}
+  employments:
+  - company: Acme
+    start: 2016-06-09
+    end: 2019-08-30
+  managedBy:
+  - {date: 2016-06-09, value: Engineering}
+  - {date: 2019-08-30}
+  assignments:
+  - department: Finance
+    start: 2018-01-09
+    end: 2019-01-09
+- id: Yuki Ito
+  start: 1986-01-24
+  end: 9999-12-31
+  name:
+  - {date: 1986-01-24, value: Yuki Ito}
+  employments:
+  - company: Acme
+    start: 2017-07-26
+    end: 9999-12-31
+  managedBy:
+  - {date: 2017-07-26, value: Marketing}
+  - {date: 2020-07-26, value: Sales}
+- id: Fern Ngata
+  start: 1974-03-06
+  end: 9999-12-31
+  name:
+  - {date: 1974-03-06, value: Fern Ngata}
+  employments:
+  - company: Acme
+    start: 2017-01-25
+    end: 9999-12-31
+  managedBy:
+  - {date: 2017-01-25, value: Research}
+  - {date: 2018-01-01, value: Engineering}
+- id: Fern Quill
+  start: 1995-11-09
+  end: 9999-12-31
+  name:
+  - {date: 1995-11-09, value: Fern Quill}
+  employments:
+  - company: Acme
+    start: 2017-11-17
+    end: 9999-12-31
+  managedBy:
+  - {date: 2017-11-17, value: Marketing}
+- id: Iris Evans
+  start: 1973-06-04
+  end: 9999-12-31
+  name:
+  - {date: 1973-06-04, value: Iris Evans}
+  employments:
+  - company: Acme
+    start: 2017-04-16
+    end: 9999-12-31
+  managedBy:
+  - {date: 2017-04-16, value: Engineering}
+- id: Wren Fraser
+  start: 1981-10-16
+  end: 9999-12-31
+  name:
+  - {date: 1981-10-16, value: Wren Fraser}
+  employments:
+  - company: Acme
+    start: 2017-08-10
+    end: 9999-12-31
+  managedBy:
+  - {date: 2017-08-10, value: Research}
+  - {date: 2018-01-01, value: Engineering}
+- id: Yuki Jones
+  start: 1985-06-21
+  end: 9999-12-31
+  name:
+  - {date: 1985-06-21, value: Yuki Jones}
+  employments:
+  - company: Acme
+    start: 2017-03-05
+    end: 9999-12-31
+  managedBy:
+  - {date: 2017-03-05, value: Finance}
+- id: Ada Jones
+  start: 1988-06-21
+  end: 9999-12-31
+  name:
+  - {date: 1988-06-21, value: Ada Jones}
+  employments:
+  - company: Acme
+    start: 2018-04-18
+    end: 9999-12-31
+  managedBy:
+  - {date: 2018-04-18, value: Sales}
+- id: Olive Hart
+  start: 1992-12-05
+  end: 9999-12-31
+  name:
+  - {date: 1992-12-05, value: Olive Hart}
+  employments:
+  - company: Acme
+    start: 2018-01-04
+    end: 9999-12-31
+  managedBy:
+  - {date: 2018-01-04, value: Marketing}
+- id: Wren Walsh
+  start: 1989-02-09
+  end: 9999-12-31
+  name:
+  - {date: 1989-02-09, value: Wren Walsh}
+  employments:
+  - company: Acme
+    start: 2018-01-25
+    end: 9999-12-31
+  managedBy:
+  - {date: 2018-01-25, value: Engineering}
+- id: Zane Chen
+  start: 1996-06-26
+  end: 9999-12-31
+  name:
+  - {date: 1996-06-26, value: Zane Chen}
+  employments:
+  - company: Acme
+    start: 2018-07-19
+    end: 9999-12-31
+  managedBy:
+  - {date: 2018-07-19, value: Marketing}
+- id: Gita Usher
+  start: 1995-01-08
+  end: 9999-12-31
+  name:
+  - {date: 1995-01-08, value: Gita Usher}
+  employments:
+  - company: Acme
+    start: 2018-01-05
+    end: 9999-12-31
+  managedBy:
+  - {date: 2018-01-05, value: Engineering}
+- id: Gita Reid
+  start: 1994-05-11
+  end: 9999-12-31
+  name:
+  - {date: 1994-05-11, value: Gita Reid}
+  employments:
+  - company: Acme
+    start: 2018-03-04
+    end: 9999-12-31
+  managedBy:
+  - {date: 2018-03-04, value: Sales}
+  assignments:
+  - department: Finance
+    start: 2018-10-04
+    end: 2020-04-04
+- id: Erin Kaur
+  start: 1979-07-28
+  end: 9999-12-31
+  name:
+  - {date: 1979-07-28, value: Erin Kaur}
+  employments:
+  - company: Acme
+    start: 2019-02-13
+    end: 9999-12-31
+  managedBy:
+  - {date: 2019-02-13, value: Sales}
+- id: Fern Hart
+  start: 1992-08-06
+  end: 9999-12-31
+  name:
+  - {date: 1992-08-06, value: Fern Hart}
+  employments:
+  - company: Acme
+    start: 2019-03-14
+    end: 9999-12-31
+  managedBy:
+  - {date: 2019-03-14, value: Engineering}
+- id: Uma Singh
+  start: 1995-05-19
+  end: 9999-12-31
+  name:
+  - {date: 1995-05-19, value: Uma Singh}
+  employments:
+  - company: Acme
+    start: 2019-09-28
+    end: 9999-12-31
+  managedBy:
+  - {date: 2019-09-28, value: Engineering}
+- id: Ada Kaur
+  start: 1995-08-10
+  end: 9999-12-31
+  name:
+  - {date: 1995-08-10, value: Ada Kaur}
+  employments:
+  - company: Acme
+    start: 2019-02-05
+    end: 9999-12-31
+  managedBy:
+  - {date: 2019-02-05, value: Finance}
+- id: Ada Vega
+  start: 1983-11-29
+  end: 9999-12-31
+  name:
+  - {date: 1983-11-29, value: Ada Vega}
+  employments:
+  - company: Acme
+    start: 2019-09-27
+    end: 9999-12-31
+  managedBy:
+  - {date: 2019-09-27, value: Sales}
+- id: Mia Fraser
+  start: 1982-07-15
+  end: 9999-12-31
+  name:
+  - {date: 1982-07-15, value: Mia Fraser}
+  employments:
+  - company: Acme
+    start: 2019-09-01
+    end: 9999-12-31
+  managedBy:
+  - {date: 2019-09-01, value: Marketing}
+- id: Tui Jones
+  start: 1993-05-26
+  end: 9999-12-31
+  name:
+  - {date: 1993-05-26, value: Tui Jones}
+  employments:
+  - company: Acme
+    start: 2020-06-18
+    end: 9999-12-31
+  managedBy:
+  - {date: 2020-06-18, value: Finance}
+- id: Chloe Kaur
+  start: 1988-12-28
+  end: 9999-12-31
+  name:
+  - {date: 1988-12-28, value: Chloe Kaur}
+  employments:
+  - company: Acme
+    start: 2020-12-18
+    end: 9999-12-31
+  managedBy:
+  - {date: 2020-12-18, value: Engineering}
+- id: Tui Vega
+  start: 1988-11-27
+  end: 9999-12-31
+  name:
+  - {date: 1988-11-27, value: Tui Vega}
+  employments:
+  - company: Acme
+    start: 2020-12-12
+    end: 9999-12-31
+  managedBy:
+  - {date: 2020-12-12, value: Engineering}
+- id: Iris Usher
+  start: 1976-06-23
+  end: 9999-12-31
+  name:
+  - {date: 1976-06-23, value: Iris Usher}
+  employments:
+  - company: Acme
+    start: 2020-04-14
+    end: 9999-12-31
+  managedBy:
+  - {date: 2020-04-14, value: Sales}
+- id: Fern Dixon
+  start: 1991-08-04
+  end: 9999-12-31
+  name:
+  - {date: 1991-08-04, value: Fern Dixon}
+  employments:
+  - company: Acme
+    start: 2020-08-19
+    end: 9999-12-31
+  managedBy:
+  - {date: 2020-08-19, value: Sales}
+- id: Dan Zhou
+  start: 1995-09-06
+  end: 9999-12-31
+  name:
+  - {date: 1995-09-06, value: Dan Zhou}
+  employments:
+  - company: Acme
+    start: 2020-01-21
+    end: 9999-12-31
+  managedBy:
+  - {date: 2020-01-21, value: Marketing}
+- id: Iris Walsh
+  start: 1978-08-31
+  end: 9999-12-31
+  name:
+  - {date: 1978-08-31, value: Iris Walsh}
+  employments:
+  - company: Acme
+    start: 2020-05-26
+    end: 9999-12-31
+  managedBy:
+  - {date: 2020-05-26, value: Engineering}
