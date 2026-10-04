@@ -2,6 +2,7 @@ package io.github.ctgnz.fxtivity.example;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
@@ -9,6 +10,7 @@ import static org.hamcrest.Matchers.startsWith;
 
 import java.io.InputStream;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 import javafx.scene.control.TreeItem;
@@ -77,6 +79,31 @@ class ExampleViewTest {
 
             Effectivity.forDate(LocalDate.of(1991, 1, 1));
             assertThat(departmentsInTree(), contains("Sales"));
+        });
+    }
+
+    /**
+     * Stepping back a year at a time across the whole story, as with the picker's button, with the employees sorted by name: nothing a view is built on may show, even for a
+     * moment, anyone not employed on the date - whose name, before they were born, is null.
+     */
+    @Test
+    void testSteppingBackThroughTheStory() {
+        FxThread.run(() -> {
+            // JavaFX hands what a list listener throws to the thread's handler, so a failure inside the table's sort would otherwise only be logged.
+            List<Throwable> thrown = new ArrayList<>();
+            Thread.UncaughtExceptionHandler previous = Thread.currentThread().getUncaughtExceptionHandler();
+            Thread.currentThread().setUncaughtExceptionHandler((thread, e) -> thrown.add(e));
+            try {
+                for (int year = 2020; year >= 1990; year--) {
+                    Effectivity.forDate(LocalDate.of(year, 6, 1));
+                }
+            } finally {
+                Thread.currentThread().setUncaughtExceptionHandler(previous);
+            }
+            assertThat(thrown, is(empty()));
+            LocalDate last = LocalDate.of(1990, 6, 1);
+            assertThat("exactly those employed on the last date", view.employees.getItems().size(),
+                is((int) view.register().companies().getFirst().employments().stream().filter(employment -> employment.containsDate(last)).count()));
         });
     }
 
