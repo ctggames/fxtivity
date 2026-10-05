@@ -14,7 +14,7 @@
 
     <name>fxtivity Core</name>
     <description>The Effectivity pattern on JavaFX: date-bounded entities, values that change over time, and observable collections that all follow one application-wide effective date.</description>
-    <url>https://github.com/ctgnz/fxtivity</url>
+    <url>https://github.com/ctggames/fxtivity</url>
 
     <dependencies>
         <!--

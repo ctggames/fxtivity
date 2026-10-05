@@ -14,7 +14,7 @@
 
     <name>fxtivity Controls</name>
     <description>JavaFX controls for fxtivity: a picker that sets the application's effective date, a date cell that keeps dates within the active range, and a base for an editor of a value that changes over time.</description>
-    <url>https://github.com/ctgnz/fxtivity</url>
+    <url>https://github.com/ctggames/fxtivity</url>
 
     <dependencies>
         <dependency>
