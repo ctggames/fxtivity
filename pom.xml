@@ -30,6 +30,11 @@
         The same layout as jmsfx (jmsfx#102). Release a version across all of it with
         `mvn versions:set -DnewVersion=1.0.0 -DprocessAllModules=true`.
     -->
+    <properties>
+        <!-- The one project at the root itself, rather than a level below it (see fxtivity-parent). -->
+        <spotless.config>${project.basedir}/config</spotless.config>
+    </properties>
+
     <modules>
         <module>fxtivity-parent</module>
         <module>fxtivity-core</module>
