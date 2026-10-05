@@ -99,7 +99,7 @@ name:
 - {date: 1995-06-01, value: Jane Brown}
 ```
 
-Each change on its own line comes from [yaml-flock](https://github.com/ctgnz/yaml-flock), which is an **optional** dependency: add it if you write YAML and want that shape. Without it the annotation is simply ignored, so a project writing JSON — or not serialising at all — inherits no YAML stack for it.
+Each change on its own line comes from [yaml-flock](https://github.com/ctggames/yaml-flock), which is an **optional** dependency: add it if you write YAML and want that shape. Without it the annotation is simply ignored, so a project writing JSON — or not serialising at all — inherits no YAML stack for it.
 
 ### Collections
 
@@ -127,7 +127,7 @@ Reading then fills the collection you declared, configured as you declared it. A
 
 ## The specification
 
-**[Read the scenarios at ctgnz.github.io/fxtivity](https://ctgnz.github.io/fxtivity/)**.
+**[Read the scenarios at docs.ctg.co.nz/fxtivity](https://docs.ctg.co.nz/fxtivity/)**.
 
 They are Cucumber features in [`fxtivity-example/src/test/resources/features`](fxtivity-example/src/test/resources/features), written against Fowler's own example — people, companies and the employments between them — and extended with the cases his pattern leaves to others: a name that changes over time, an office with one holder at a time, a board whose seats each have their own history, and departments related to people at both ends.
 

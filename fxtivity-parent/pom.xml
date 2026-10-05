@@ -9,7 +9,7 @@
 
     <name>fxtivity Parent</name>
     <description>Shared build configuration for every fxtivity module: the Java level, the encoding, the dependency versions, the formatter and import order, and the release profile.</description>
-    <url>https://github.com/ctgnz/fxtivity</url>
+    <url>https://github.com/ctggames/fxtivity</url>
 
     <!--
         Every module's build configuration, and nothing else: it carries no modules, so it is
@@ -35,9 +35,9 @@
     </developers>
 
     <scm>
-        <connection>scm:git:git://github.com/ctgnz/fxtivity.git</connection>
-        <developerConnection>scm:git:ssh://github.com/ctgnz/fxtivity.git</developerConnection>
-        <url>http://github.com/ctgnz/fxtivity/tree/master</url>
+        <connection>scm:git:git://github.com/ctggames/fxtivity.git</connection>
+        <developerConnection>scm:git:ssh://github.com/ctggames/fxtivity.git</developerConnection>
+        <url>http://github.com/ctggames/fxtivity/tree/master</url>
     </scm>
 
     <properties>

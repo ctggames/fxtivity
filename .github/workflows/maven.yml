@@ -35,7 +35,7 @@ jobs:
     # The release profile is what attaches javadoc and sources, and its doclint=all,-missing is the only
     # thing in the whole build that resolves {@link} references. Run it on every push so it cannot quietly
     # stop working between releases - jmsfx found six dangling links at tag time and paid for them with two
-    # re-signed tags (ctgnz/jmsfx#148).
+    # re-signed tags (ctggames/jmsfx#148).
     #
     # GPG is the only thing skipped, because a pull request from a fork has no signing key. Skipping javadoc
     # as well would leave this step checking nothing at all, which is precisely how that problem stayed

@@ -14,7 +14,7 @@
 
     <name>fxtivity Example</name>
     <description>The worked example: Fowler's people and companies extended with departments, a board and a succession of chief executives - the model the scenarios specify the library against, and an application built on it.</description>
-    <url>https://github.com/ctgnz/fxtivity</url>
+    <url>https://github.com/ctggames/fxtivity</url>
 
     <!--
         Never published (excludeArtifacts in fxtivity-parent): it is documentation that runs, not a
