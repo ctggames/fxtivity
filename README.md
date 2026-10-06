@@ -51,7 +51,7 @@ An appointment that would overlap the incumbent is refused rather than quietly a
 <dependency>
     <groupId>io.github.ctgnz</groupId>
     <artifactId>fxtivity-core</artifactId>
-    <version>1.0.0</version>
+    <version>1.0.1</version>
 </dependency>
 ```
 
@@ -63,7 +63,7 @@ Requires Java 25. Brings in `javafx-base` — beans and collections, nothing tha
 <dependency>
     <groupId>io.github.ctgnz</groupId>
     <artifactId>fxtivity-controls</artifactId>
-    <version>1.0.0</version>
+    <version>1.0.1</version>
 </dependency>
 ```
 
