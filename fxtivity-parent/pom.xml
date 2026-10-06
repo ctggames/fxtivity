@@ -44,7 +44,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <javafx.version>25.0.3</javafx.version>
-        <jackson.version>2.22.2</jackson.version>
+        <jackson.version>2.22.3</jackson.version>
         <cucumber.version>7.34.8</cucumber.version>
         <!--
             The formatter profile and import order, at the repository root. Relative to each project's own
@@ -60,7 +60,7 @@
             <!--
                 The BOM rather than a single version property, because jackson-annotations stopped
                 tracking the patch version of the other Jackson modules at 2.20 and is versioned on its
-                own line now. The BOM knows which annotations release goes with databind 2.22.2.
+                own line now. The BOM knows which annotations release goes with databind 2.22.3.
             -->
             <dependency>
                 <groupId>com.fasterxml.jackson</groupId>
