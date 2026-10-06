@@ -12,6 +12,11 @@
 # at the tagged commit, so a problem found at tag time cannot be fixed by landing a correction on master:
 # it needs a fresh tag. Rehearsing is much cheaper than discovering that.
 
+# A tag pushed by the release train publishes straight through rather than staging, because the train has
+# already had its approval (ctggames/release-train#6). Every run, rehearsal or release, lists the files it
+# would publish or did publish as release-artifacts.txt, in the run summary and as a workflow artifact, so
+# the train can compare a release with its rehearsal.
+
 name: Release to Maven Central
 
 # Needed by the final step, which creates the GitHub release. This repository's default workflow
@@ -83,15 +88,36 @@ jobs:
           exit 1
         fi
 
+    # A tag pushed by the release train has already had its approval, so it publishes straight through and
+    # waits until Central reports it published. Any other tag, and a manual "publish", stages a validated
+    # deployment for a person to publish in the Portal, as before. The train's bot account is named in the
+    # RELEASE_TRAIN_BOT organisation variable; while that is unset, every release stages.
+    - name: Decide how the release reaches Central
+      id: publish
+      env:
+        TRAIN_BOT: ${{ vars.RELEASE_TRAIN_BOT }}
+      run: |
+        if [ "$GITHUB_EVENT_NAME" = push ] && [ -n "$TRAIN_BOT" ] && [ "$GITHUB_ACTOR" = "$TRAIN_BOT" ]; then
+          echo "Tag pushed by the release train ($GITHUB_ACTOR): publishing automatically."
+          echo "auto=true" >> "$GITHUB_OUTPUT"
+          echo "wait=PUBLISHED" >> "$GITHUB_OUTPUT"
+        else
+          echo "Staging a validated deployment, to be published in the Portal."
+          echo "auto=false" >> "$GITHUB_OUTPUT"
+          echo "wait=VALIDATED" >> "$GITHUB_OUTPUT"
+        fi
+
     # fxtivity-controls' tests start the JavaFX toolkit, which needs a display: both builds below run
     # under Xvfb, as CI does.
     - name: Install Xvfb
       run: sudo apt-get update && sudo apt-get install -y xvfb
 
-    # Everything a release does except the two steps that cannot be undone.
+    # Everything a release does except the two steps that cannot be undone. install rather than verify, so
+    # the artifacts land in the local repository in the layout a real release stages them in, for the
+    # artifact list below.
     - name: Rehearse the release build
       if: github.event_name == 'workflow_dispatch' && inputs.mode == 'rehearse'
-      run: xvfb-run --auto-servernum mvn -B --no-transfer-progress -Prelease verify
+      run: xvfb-run --auto-servernum mvn -B --no-transfer-progress -Prelease install
       env:
         MAVEN_GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
 
@@ -100,11 +126,63 @@ jobs:
     # there is no reason to ship artifacts that were not tested on the exact commit being released.
     - name: Publish to the Maven Central Portal
       if: github.event_name == 'push' || inputs.mode == 'publish'
-      run: xvfb-run --auto-servernum mvn -B --no-transfer-progress -Prelease deploy
+      run: >-
+        xvfb-run --auto-servernum mvn -B --no-transfer-progress -Prelease deploy
+        -Dcentral.autoPublish=${{ steps.publish.outputs.auto }}
+        -Dcentral.waitUntil=${{ steps.publish.outputs.wait }}
       env:
         MAVEN_USERNAME: ${{ secrets.CENTRAL_USERNAME }}
         MAVEN_PASSWORD: ${{ secrets.CENTRAL_PASSWORD }}
         MAVEN_GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+
+    # The files a release publishes, or a rehearsal would publish, in repository layout without signatures
+    # or checksums: what the release train compares with its own rehearsal. A real release lists what the
+    # publishing plugin staged; a rehearsal lists what it installed locally. Either way the list holds only
+    # this repository's own modules, read from its poms, less any the poms' excludeArtifacts keep off
+    # Central: a local repository also holds other ctggames artifacts, from the cache or from a whole-train
+    # rehearsal, and a sibling library can share this version number. An empty list fails the step, so a
+    # change in either layout cannot pass unnoticed as "nothing to compare".
+    - name: List the release artifacts
+      run: |
+        VERSION=$(mvn -q -B help:evaluate -Dexpression=project.version -DforceStdout 2>/dev/null | tail -n1)
+        GROUP=$(mvn -q -B help:evaluate -Dexpression=project.groupId -DforceStdout 2>/dev/null | tail -n1 | tr . /)
+        STAGING=$(find . -type d -path '*/target/central-staging' | head -n1)
+        ROOT=${STAGING:-$HOME/.m2/repository}
+        MODULES=$(python3 - <<'PY'
+        import pathlib, xml.etree.ElementTree as ET
+        ns = {'m': 'http://maven.apache.org/POM/4.0.0'}
+        modules, excluded = set(), set()
+        for pom in pathlib.Path('.').rglob('pom.xml'):
+            if 'target' in pom.parts:
+                continue
+            root = ET.parse(pom).getroot()
+            modules.add(root.find('m:artifactId', ns).text)
+            excluded.update(e.text for e in root.iter('{%s}excludeArtifact' % ns['m']))
+        print('|'.join(sorted(modules - excluded)))
+        PY
+        )
+        echo "Listing $GROUP at $VERSION from $ROOT, for: $MODULES"
+        (cd "$ROOT" && find "$GROUP" -type f -path "*/$VERSION/*") \
+          | grep -E "^$GROUP/($MODULES)/$VERSION/" \
+          | grep -vE '\.(asc|md5|sha1|sha256|sha512)$|/maven-metadata[^/]*$|/_remote\.repositories$|\.lastUpdated$' \
+          | sort > release-artifacts.txt || true
+        if [ ! -s release-artifacts.txt ]; then
+          echo "::error::no artifacts found for $GROUP ($MODULES) at $VERSION under $ROOT"
+          exit 1
+        fi
+        cat release-artifacts.txt
+        {
+          echo "### Release artifacts: $VERSION"
+          echo '```'
+          cat release-artifacts.txt
+          echo '```'
+        } >> "$GITHUB_STEP_SUMMARY"
+
+    - name: Keep the artifact list
+      uses: actions/upload-artifact@v7
+      with:
+        name: release-artifacts
+        path: release-artifacts.txt
 
     # After the publish, so a failed deploy cannot leave a release announcing a version that is not on
     # Central. Tag pushes only: on a manual "publish" run there is no tag for a release to describe, and
