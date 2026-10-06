@@ -4,7 +4,7 @@
 
     <groupId>io.github.ctgnz</groupId>
     <artifactId>fxtivity</artifactId>
-    <version>1.0.1</version>
+    <version>1.0.2-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>fxtivity</name>
@@ -13,7 +13,7 @@
     <parent>
         <groupId>io.github.ctgnz</groupId>
         <artifactId>fxtivity-parent</artifactId>
-        <version>1.0.1</version>
+        <version>1.0.2-SNAPSHOT</version>
         <relativePath>fxtivity-parent/pom.xml</relativePath>
     </parent>
 
